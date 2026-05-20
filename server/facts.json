@@ -1,0 +1,39 @@
+{
+  "facts": [
+    {
+      "id": 1,
+      "question": "Wie hoch ist der Eiffelturm in Metern?",
+      "answer": 330
+    },
+    {
+      "id": 2,
+      "question": "2 Wie hoch ist der Eiffelturm in Metern?",
+      "answer": 330
+    },
+    {
+      "id": 3,
+      "question": "3 Wie hoch ist der Eiffelturm in Metern?",
+      "answer": 330
+    },
+    {
+      "id": 4,
+      "question": "4 Wie hoch ist der Eiffelturm in Metern?",
+      "answer": 330
+    },
+    {
+      "id": 5,
+      "question": "5 Wie hoch ist der Eiffelturm in Metern?",
+      "answer": 330
+    },
+    {
+      "id": 6,
+      "question": "6 Wie hoch ist der Eiffelturm in Metern?",
+      "answer": 330
+    },
+    {
+      "id": 7,
+      "question": "7 Wie hoch ist der Eiffelturm in Metern?",
+      "answer": 330
+    }
+  ]
+}

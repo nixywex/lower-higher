@@ -1,1 +1,19 @@
-console.log("Hello via Bun!");
+import express, { Request, Response } from "express";
+import factsRouter from './routes/facts';
+
+const app = express();
+const port = 3000;
+
+var cors = require("cors");
+
+app.use(cors());
+
+app.get("/", async (_: Request, res: Response) => {
+  res.send("Lower-Higher");
+});
+
+app.use('/api/facts', factsRouter);
+
+app.listen(port, () => {
+  console.log(`"Lower-Higher" backend listening on port ${port}`);
+});
