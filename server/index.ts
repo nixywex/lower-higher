@@ -7,6 +7,7 @@ const port = 3000;
 var cors = require("cors");
 
 app.use(cors());
+app.use(express.json());
 
 app.get("/", async (_: Request, res: Response) => {
   res.send("Lower-Higher");
