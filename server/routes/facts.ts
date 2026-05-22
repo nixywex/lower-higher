@@ -12,17 +12,18 @@ interface Fact {
 }
 
 interface FactForClient {
-    id: number;
-    question: string;
+  id: number;
+  question: string;
 }
 
 const factsFilePath: string = "./facts.json";
 
 const router = Router();
+const numberOfFacts = 7;
 
 router.get("/round", async (_, res) => {
   try {
-    const facts = await getClientFacts();
+    const facts = await getClientFacts(numberOfFacts);
     res.status(200).send(facts);
   } catch (error) {
     console.error("Error reading facts file: ", error);
@@ -32,16 +33,19 @@ router.get("/round", async (_, res) => {
 
 router.post("/submit", async (req, res) => {
   try {
-    const facts = await readFacts(factsFilePath);
     const { ids }: { ids: number[] } = req.body;
-    
-    const rightAnswers = facts.filter(fact => ids.includes(fact.id)).sort((a, b) => a.answer - b.answer)
-    const score = getScore(rightAnswers.map(fact => fact.answer), ids, 10000);
+    const rightAnswers = await getRightAnswers(ids);
+
+    const score = getScore(
+      rightAnswers.map((fact) => fact.answer),
+      ids,
+      10000,
+    );
 
     //TODO: object for response?
     res.status(200).send({
-        "rightAnswers": rightAnswers,
-        "score": score
+      rightAnswers: rightAnswers,
+      score: score,
     });
   } catch (error) {
     console.error("Error submitting the results: ", error);
@@ -49,20 +53,36 @@ router.post("/submit", async (req, res) => {
   }
 });
 
-async function getClientFacts(): Promise<FactForClient[]> {
-    const facts = await readFacts(factsFilePath);
+async function getRightAnswers(ids: number[]): Promise<Fact[]> {
+      const facts = await readFacts(factsFilePath);
+      return facts.filter((fact) => ids.includes(fact.id)).sort((a, b) => a.answer - b.answer);
+}
 
-    //TODO: get 7 random of them
+async function getClientFacts(numberOfFacts: number): Promise<FactForClient[]> {
+  const facts = await readFacts(factsFilePath);
+  const ids = getRandomFactIds(facts.length, numberOfFacts);
 
-    const factsForClient = facts.map(fact => {
-        var factForClient: FactForClient = {
-            id: fact.id,
-            question: fact.question
-        }
-        return factForClient;
-    })
+  return mapClientFacts(facts, ids);
+}
 
-    return factsForClient;
+function mapClientFacts(facts: [Fact], ids: number[]): FactForClient[] {
+  return facts
+    .filter((fact) => ids.includes(fact.id))
+    .map((fact) => {
+      var factForClient: FactForClient = {
+        id: fact.id,
+        question: fact.question,
+      };
+      return factForClient;
+    });
+}
+
+function getRandomFactIds(maxId: number, numberOfIds: number): number[] {
+  let ids = [];
+  for (let i = 0; i < numberOfIds; i++)
+    ids.push(Math.floor(Math.random() * maxId));
+
+  return ids;
 }
 
 async function readFacts(filePath: string): Promise<[Fact]> {
@@ -72,25 +92,29 @@ async function readFacts(filePath: string): Promise<[Fact]> {
   return data.facts;
 }
 
-export default router;
+function getScore(
+  rightAnswers: number[],
+  userAnswers: number[],
+  maxScore: number,
+) {
+  var score = 0;
+  const maxPerAnswer = maxScore / rightAnswers.length;
 
-function getScore(rightAnswers: number[], userAnswers: number[], maxScore: number) {
-    var score = 0;
-    const maxPerAnswer = maxScore / rightAnswers.length;
+  for (let i = 0; i < rightAnswers.length; i++) {
+    var userAnswerValue = userAnswers[i];
+    var rightAnswerValue = rightAnswers[i];
 
-    for(let i = 0; i < rightAnswers.length; i++ ) {
-        var userAnswerValue = userAnswers[i];
-        var rightAnswerValue = rightAnswers[i];
+    if (userAnswerValue == undefined || rightAnswerValue == undefined)
+      throw Error();
 
-        if(userAnswerValue == undefined || rightAnswerValue == undefined) 
-            throw Error();
+    var answerScore = rightAnswerValue - userAnswerValue;
 
-        var answerScore = rightAnswerValue - userAnswerValue;
-
-        if (maxPerAnswer - Math.abs(answerScore) > 0) {
-            score += (maxPerAnswer - Math.abs(answerScore));
-        }
+    if (maxPerAnswer - Math.abs(answerScore) > 0) {
+      score += maxPerAnswer - Math.abs(answerScore);
     }
+  }
 
-    return score;
+  return score;
 }
+
+export default router;
