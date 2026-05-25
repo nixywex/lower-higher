@@ -1,0 +1,8 @@
+{
+  "name": "ranking-game",
+  "private": true,
+  "scripts": {
+    "prepare": "husky",
+    "lint": "eslint ."
+  }
+}
