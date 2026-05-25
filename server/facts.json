@@ -1,0 +1,230 @@
+{
+  "facts": [
+    {
+      "id": 1,
+      "question": "Wie viele Tage dauerte der längste dokumentierte Schluckauf-Anfall eines Menschen?",
+      "answer": 24800
+    },
+    {
+      "id": 2,
+      "question": "Wie viele Sekunden dauert der längste aufgezeichnete Flug eines Huhns?",
+      "answer": 13
+    },
+    {
+      "id": 3,
+      "question": "Wie viele Jahre dauert es im Durchschnitt, bis ein Tropfen Wasser den gesamten globalen Ozeankreislauf einmal durchlaufen hat?",
+      "answer": 1000
+    },
+    {
+      "id": 4,
+      "question": "Wie viele Jahre braucht der Zwergplanet Pluto für eine einzige Umkreisung der Sonne?",
+      "answer": 248
+    },
+    {
+      "id": 5,
+      "question": "Wie viele Stunden dauert es, um das längste Wort der Welt laut vorzulesen?",
+      "answer": 126000
+    },
+    {
+      "id": 6,
+      "question": "Wie viele Sekunden dauert der längste offiziell gemessene menschliche Rülpser?",
+      "answer": 18
+    },
+    {
+      "id": 7,
+      "question": "Wie viele Tage deines Lebens sind deine Augen insgesamt geschlossen, nur weil du blinzelst?",
+      "answer": 1825
+    },
+    {
+      "id": 8,
+      "question": "Wie viele Jahre braucht ein Lego-Stein, um sich im Ozean vollständig zu zersetzen?",
+      "answer": 1300
+    },
+    {
+      "id": 9,
+      "question": "Wie viele Stunden hat der Mensch verbracht, der den Weltrekord im Dauer-Videospielen hält?",
+      "answer": 135
+    },
+    {
+      "id": 10,
+      "question": "Wie viele Zähne hat eine Weinbergschnecke auf ihrer Zunge?",
+      "answer": 25000
+    },
+    {
+      "id": 11,
+      "question": "Wie viele Prozent der DNA einer Banane stimmt mit der DNA einer menschlichen Zelle überein?",
+      "answer": 50
+    },
+    {
+      "id": 12,
+      "question": "Wie viele Dominosteine fielen beim aktuellen Weltrekord im Domino-Day um?",
+      "answer": 4491863
+    },
+    {
+      "id": 13,
+      "question": "Wie viele Hotdogs essen die US-Amerikaner schätzungsweise an einem einzigen Nationalfeiertag?",
+      "answer": 150000000
+    },
+    {
+      "id": 14,
+      "question": "Wie viele Oscars wurden seit der allerersten Verleihung 1929 bis heute vergeben?",
+      "answer": 3140
+    },
+    {
+      "id": 15,
+      "question": "Wie oft singt Daft Punk \"Around the World\" im gleichnamigen Song?",
+      "answer": 144
+    },
+    {
+      "id": 16,
+      "question": "Wie viele Punkte erreicht man bei einem Pac-Man-Spiel maximal, bevor der Kill-Screen kommt?",
+      "answer": 3333360
+    },
+    {
+      "id": 17,
+      "question": "Wie viele bunte Ballons heben das Haus im Pixar-Film \"Up\" an?",
+      "answer": 20622
+    },
+    {
+      "id": 18,
+      "question": "Wie viele verschiedene Möglichkeiten gibt es mathematisch, eine klassische Krawatte zu binden?",
+      "answer": 177147
+    },
+    {
+      "id": 19,
+      "question": "Wie viele Stunden Videomaterial werden jede einzelne Minute auf YouTube hochgeladen?",
+      "answer": 30000
+    },
+    {
+      "id": 20,
+      "question": "Wie viele einzelne Lego-Steine werden an einem Tag weltweit produziert?",
+      "answer": 98630136
+    },
+    {
+      "id": 21,
+      "question": "Wie oft wird das Wort \"Baby\" im englischen Kinderlied \"Baby Shark\" gesungen?",
+      "answer": 162
+    },
+    {
+      "id": 22,
+      "question": "Wie viele Kalorien hat ein Big Mac?",
+      "answer": 550
+    },
+    {
+      "id": 23,
+      "question": "Wie viele Emojis gibt es offiziell?",
+      "answer": 3664
+    },
+    {
+      "id": 24,
+      "question": "Wie viele Liter Bier werden beim Oktoberfest jährlich getrunken?",
+      "answer": 7000000
+    },
+    {
+      "id": 25,
+      "question": "Wie viele Mal wurde die Mona Lisa in ihrer Geschichte gestohlen?",
+      "answer": 1
+    },
+    {
+      "id": 26,
+      "question": "Wie viele Gramm wiegt ein offizieller Golfball?",
+      "answer": 46
+    },
+    {
+      "id": 27,
+      "question": "Wie viele Monde hat Jupiter aktuell?",
+      "answer": 95
+    },
+    {
+      "id": 28,
+      "question": "Wie viele Milliarden Sterne hat die Milchstraße?",
+      "answer": 300
+    },
+    {
+      "id": 29,
+      "question": "Wie viele Liter Speichel produziert ein Mensch in einem Jahr?",
+      "answer": 730
+    },
+    {
+      "id": 30,
+      "question": "Wie viele Tage trägt eine Elefantin ihr Baby?",
+      "answer": 660
+    },
+    {
+      "id": 31,
+      "question": "Wie viele Seiten hat das längste je veröffentlichte Buch?",
+      "answer": 13905
+    },
+    {
+      "id": 32,
+      "question": "Wie viele Wörter spricht ein Mensch durchschnittlich pro Tag?",
+      "answer": 16000
+    },
+    {
+      "id": 33,
+      "question": "Wie viele Wörter umfasst die gesamte Harry-Potter-Reihe?",
+      "answer": 1084170
+    },
+    {
+      "id": 34,
+      "question": "Wie viele Tage hat ein Monopoly-Weltrekordspiel gedauert?",
+      "answer": 70
+    },
+    { "id": 35, "question": "Wie viele Knochen hat ein Hai?", "answer": 0 },
+    {
+      "id": 36,
+      "question": "Wie viele Regenwürmer leben in einem Quadratmeter gesunden Ackerbodens?",
+      "answer": 400
+    },
+    {
+      "id": 37,
+      "question": "Wie viele Milliarden Hühner leben aktuell auf der Erde?",
+      "answer": 33
+    },
+    {
+      "id": 38,
+      "question": "Wie viele Schweißdrüsen hat der Mensch?",
+      "answer": 3000000
+    },
+    {
+      "id": 39,
+      "question": "Wie viele Kilogramm Essen frisst ein Elefant täglich?",
+      "answer": 200
+    },
+    {
+      "id": 40,
+      "question": "Wie viele Tonnen Müll produziert New York City täglich?",
+      "answer": 12000
+    },
+    {
+      "id": 41,
+      "question": "Wie viele Wörter umfasst das Oxford English Dictionary?",
+      "answer": 170000
+    },
+    {
+      "id": 42,
+      "question": "Wie viele Zentimeter hoch war die größte je gemessene Sonnenblume?",
+      "answer": 940
+    },
+    {
+      "id": 43,
+      "question": "Wie viele Staffeln hat The Simpsons aktuell?",
+      "answer": 36
+    },
+    {
+      "id": 44,
+      "question": "Wie viele Millionen Kopien hat GTA V weltweit verkauft?",
+      "answer": 190
+    },
+    {
+      "id": 45,
+      "question": "Wie viele Episoden hat SpongeBob Schwammkopf insgesamt?",
+      "answer": 330
+    },
+    {
+      "id": 46,
+      "question": "Wie viele Mal fällt das F-Wort in Pulp Fiction?",
+      "answer": 265
+    }
+  ]
+}
