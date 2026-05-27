@@ -1,8 +1,20 @@
 {
-  "name": "ranking-game",
+  "name": "lower-higher",
   "private": true,
   "scripts": {
     "prepare": "husky",
     "lint": "eslint ."
+  },
+  "lint-staged": {
+    "client/**/*.{ts,tsx}": [
+      "bunx eslint --fix",
+      "bunx prettier --write"
+    ],
+    "server/**/*.{ts,js}": [
+      "bunx prettier --write"
+    ],
+    "*.{json,md}": [
+      "bunx prettier --write"
+    ]
   }
 }
