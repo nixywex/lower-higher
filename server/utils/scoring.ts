@@ -22,5 +22,3 @@ export function calculateScore(
 
   return score;
 }
-
-module.exports = { calculateScore };

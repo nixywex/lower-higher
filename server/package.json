@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "bun --hot index.ts",
     "build": "bun build index.ts --outdir dist",
-    "start": "bun index.ts"
+    "start": "bun index.ts",
+    "test": "jest"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -15,7 +16,10 @@
     "typescript": "^5.2.0"
   },
   "dependencies": {
+    "@types/jest": "^30.0.0",
     "cors": "^2.8.6",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "jest": "^30.4.2",
+    "supertest": "^7.2.2"
   }
 }
