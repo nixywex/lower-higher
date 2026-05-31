@@ -16,5 +16,8 @@
     "*.{json,md}": [
       "bunx prettier --write"
     ]
+  },
+  "dependencies": {
+    "react-router-dom": "^7.16.0"
   }
 }
