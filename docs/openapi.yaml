@@ -1,0 +1,178 @@
+openapi: 3.1.0
+
+info:
+  title: Lower-Higher API
+  description: REST-API für das Lower-Higher-Sortierspiel. Liefert Fakten für eine Spielrunde und bewertet die Nutzer-Sortierung serverseitig.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3000
+    description: Lokaler Entwicklungsserver
+
+tags:
+  - name: Facts
+    description: Fakten laden und Runde auswerten
+
+paths:
+  /api/facts/round:
+    get:
+      tags:
+        - Facts
+      summary: Neue Spielrunde starten
+      description: Gibt 7 zufällig ausgewählte Fakten zurück. Die Antwortzahlen werden **nicht** mitgeliefert.
+      responses:
+        '200':
+          description: Liste der Fakten für diese Runde
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FactForClient'
+                minItems: 7
+                maxItems: 7
+              example:
+                - id: 3
+                  question: 'Wie hoch ist der Eiffelturm in Metern?'
+                - id: 7
+                  question: 'Wie viele Knochen hat ein erwachsener Mensch?'
+                - id: 1
+                  question: 'In welchem Jahr wurde die Titanic gebaut?'
+                - id: 12
+                  question: 'Wie schnell fliegt ein Gepard in km/h?'
+                - id: 5
+                  question: 'Wie viele Meter tief ist der Mariannengraben?'
+                - id: 9
+                  question: 'Wie viele Länder gibt es auf der Erde?'
+                - id: 2
+                  question: 'Wie viele Zähne hat ein erwachsener Mensch?'
+        '500':
+          description: Interner Serverfehler
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: 'Unexpected exception'
+
+  /api/facts/submit:
+    post:
+      tags:
+        - Facts
+      summary: Sortierung einreichen und Punkte erhalten
+      description: >
+        Nimmt die vom Nutzer gewählte Reihenfolge als ID-Array entgegen.
+        Der Server berechnet den Score anhand der Positionsabweichungen zur richtigen Reihenfolge.
+        Die korrekten Antwortzahlen werden erst hier zurückgegeben.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitRequest'
+            example:
+              ids: [3, 2, 9, 1, 7, 12, 5]
+      responses:
+        '200':
+          description: Auswertung mit korrekter Reihenfolge und erreichtem Score
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmitResponse'
+              example:
+                rightAnswers:
+                  - id: 2
+                    question: 'Wie viele Zähne hat ein erwachsener Mensch?'
+                    answer: 32
+                  - id: 3
+                    question: 'Wie hoch ist der Eiffelturm in Metern?'
+                    answer: 330
+                  - id: 9
+                    question: 'Wie viele Länder gibt es auf der Erde?'
+                    answer: 195
+                  - id: 7
+                    question: 'Wie viele Knochen hat ein erwachsener Mensch?'
+                    answer: 206
+                  - id: 12
+                    question: 'Wie schnell fliegt ein Gepard in km/h?'
+                    answer: 112
+                  - id: 1
+                    question: 'In welchem Jahr wurde die Titanic gebaut?'
+                    answer: 1909
+                  - id: 5
+                    question: 'Wie viele Meter tief ist der Mariannengraben?'
+                    answer: 11034
+                score: 7850
+        '500':
+          description: Interner Serverfehler
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: 'Unexpected exception'
+
+components:
+  schemas:
+    FactForClient:
+      type: object
+      description: Ein Fakt ohne Antwortzahl – wird ans Frontend gesendet
+      required:
+        - id
+        - question
+      properties:
+        id:
+          type: integer
+          description: Eindeutige ID des Fakts
+          example: 3
+        question:
+          type: string
+          description: Die Frage / Beschreibung des Fakts
+          example: 'Wie hoch ist der Eiffelturm in Metern?'
+
+    Fact:
+      type: object
+      description: Ein vollständiger Fakt inkl. Antwortzahl – nur serverseitig / im Submit-Response
+      required:
+        - id
+        - question
+        - answer
+      properties:
+        id:
+          type: integer
+          example: 3
+        question:
+          type: string
+          example: 'Wie hoch ist der Eiffelturm in Metern?'
+        answer:
+          type: number
+          description: Numerischer Antwortwert (wird für die Sortierung verwendet)
+          example: 330
+
+    SubmitRequest:
+      type: object
+      required:
+        - ids
+      properties:
+        ids:
+          type: array
+          description: IDs der Fakten in der vom Nutzer gewählten Reihenfolge (Index 0 = kleinster Wert)
+          items:
+            type: integer
+          minItems: 7
+          maxItems: 7
+          example: [3, 2, 9, 1, 7, 12, 5]
+
+    SubmitResponse:
+      type: object
+      required:
+        - rightAnswers
+        - score
+      properties:
+        rightAnswers:
+          type: array
+          description: Fakten in der korrekten aufsteigenden Reihenfolge inkl. Antwortzahlen
+          items:
+            $ref: '#/components/schemas/Fact'
+        score:
+          type: integer
+          description: Erreichte Punktzahl dieser Runde
+          example: 7850
