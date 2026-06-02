@@ -1,4 +1,4 @@
-import type { Fact, FactForClient } from "../types/index";
+import type { Fact, FactForClient } from '../types/index';
 
 export function mapClientFacts(facts: Fact[]): FactForClient[] {
   return facts.map((fact) => {
@@ -9,5 +9,3 @@ export function mapClientFacts(facts: Fact[]): FactForClient[] {
     return factForClient;
   });
 }
-
-module.exports = { mapClientFacts };

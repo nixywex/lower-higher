@@ -14,11 +14,9 @@ export async function getClientFacts(numberOfFacts: number): Promise<FactForClie
   return mapClientFacts(facts.filter((fact) => ids.includes(fact.id)));
 }
 
-function getRandomFactIds(maxId: number, numberOfIds: number): number[] {
+export function getRandomFactIds(maxId: number, numberOfIds: number): number[] {
   let ids = [];
   for (let i = 0; i < numberOfIds; i++) ids.push(Math.floor(Math.random() * maxId));
 
   return ids;
 }
-
-module.exports = { getRightAnswers, getClientFacts };
