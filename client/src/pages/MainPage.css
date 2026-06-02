@@ -1,0 +1,87 @@
+.game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  background: radial-gradient(ellipse at center, #0d2157 0%, #060e2b 100%);
+  padding: 40px 20px;
+  font-family: Futura, 'Trebuchet MS', Arial, sans-serif;
+  color: white;
+}
+
+.game-title {
+  font-size: 28px;
+  margin-bottom: 32px;
+}
+
+.game-title span {
+  color: #63b3ed;
+}
+
+.facts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 600px;
+}
+
+.fact-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(99, 179, 237, 0.2);
+  border-radius: 12px;
+  padding: 16px 20px;
+  cursor: grab;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
+}
+
+.fact-card:hover {
+  background: rgba(99, 179, 237, 0.1);
+  box-shadow: 0 0 20px rgba(99, 179, 237, 0.2);
+}
+
+.fact-number {
+  font-size: 20px;
+  font-weight: 700;
+  color: #63b3ed;
+  min-width: 28px;
+}
+
+.fact-question {
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.submit-button {
+  margin-top: 32px;
+  padding: 16px 60px;
+  font-size: 18px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #1a6fd4, #1e40af);
+  border: 2px solid #63b3ed;
+  border-radius: 14px;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 0 30px rgba(99, 179, 237, 0.5);
+  transition: box-shadow 0.3s ease;
+}
+
+.submit-button:hover {
+  box-shadow: 0 0 50px rgba(99, 179, 237, 0.8);
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  color: white;
+  font-size: 24px;
+  background: #060e2b;
+}
