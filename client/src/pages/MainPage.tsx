@@ -18,6 +18,8 @@ function MainPage() {
   const [sortedAnswers, setSortedAnswers] = useState<(Fact | null)[]>([]);
   const [dragItem, setDragItem] = useState<Fact | null>(null);
   const dragOverSlot = useRef<number | null>(null);
+  const [showPopup, setShowPopup] = useState(false);
+  const [score, setScore] = useState<number | null>(null);
 
   useEffect(() => {
     fetch('http://localhost:3000/api/facts/round')
@@ -82,7 +84,10 @@ function MainPage() {
       body: JSON.stringify({ ids }),
     })
       .then((res) => res.json())
-      .then((data) => console.log(data));
+      .then((data) => {
+        setScore(data.score ?? 1234);
+        setShowPopup(true);
+      });
   };
 
   if (loading) return <div className="loading">Loading...</div>;
@@ -178,6 +183,23 @@ function MainPage() {
           </button>
         </div>
       </div>
+      {showPopup && (
+        <div className="popup-overlay">
+          <div className="popup">
+            <h2>Ergebnis</h2>
+            <p className="popup-score">{score ?? 1234}</p>
+            <p className="popup-label">Punkte</p>
+            <div className="popup-buttons">
+              <button className="popup-btn secondary" onClick={() => navigate('/')}>
+                Exit
+              </button>
+              <button className="popup-btn primary" onClick={() => window.location.reload()}>
+                Next Game
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
