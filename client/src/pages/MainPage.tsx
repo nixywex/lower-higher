@@ -232,6 +232,23 @@ function MainPage() {
           </button>
         </div>
       </div>
+      {showPopup && (
+        <div className="popup-overlay">
+          <div className="popup">
+            <h2>Ergebnis</h2>
+            <p className="popup-score">{score ?? 1234}</p>
+            <p className="popup-label">Punkte</p>
+            <div className="popup-buttons">
+              <button className="popup-btn secondary" onClick={() => navigate('/')}>
+                Exit
+              </button>
+              <button className="popup-btn primary" onClick={() => window.location.reload()}>
+                Next Game
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
