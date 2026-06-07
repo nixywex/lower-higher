@@ -83,20 +83,6 @@
   max-width: 920px;
 }
 
-/* Answer Pool */
-.answer-pool {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  min-width: 170px;
-  min-height: 220px;
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(99, 179, 237, 0.2);
-  border-radius: 16px;
-  padding: 16px;
-}
-
 .answer-chip {
   background: linear-gradient(135deg, #1a6fd4, #1e40af);
   border: 1px solid #63b3ed;
@@ -109,17 +95,37 @@
   text-align: center;
   user-select: none;
   transition: box-shadow 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
 .answer-chip:hover {
   box-shadow: 0 0 20px rgba(99, 179, 237, 0.4);
 }
+
 .answer-chip:active {
   cursor: grabbing;
   opacity: 0.6;
 }
+
 .answer-chip.placed {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: rgba(99, 179, 237, 0.2);
   border-color: rgba(99, 179, 237, 0.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 16px;
+  border-radius: 8px; /* malo manji od slota da ima mali razmak */
+  margin: 4px;
+  box-sizing: border-box;
+  width: calc(100% - 8px);
+  height: calc(100% - 8px);
 }
 
 /* Timeline */
@@ -149,21 +155,25 @@
 }
 
 .timeline-slot {
-  min-height: 48px;
+  height: 56px; /* fiksna visina */
+  min-height: unset; /* ukloni stari min-height */
   background: rgba(255, 255, 255, 0.03);
   border: 1px dashed rgba(99, 179, 237, 0.25);
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden; /* da chip ne izlazi van slota */
   transition:
     border-color 0.2s,
     box-shadow 0.2s;
 }
+
 .timeline-slot:hover {
   border-color: #63b3ed;
   box-shadow: 0 0 12px rgba(99, 179, 237, 0.2);
 }
+
 .timeline-slot.filled {
   border-style: solid;
   border-color: rgba(99, 179, 237, 0.5);
@@ -214,6 +224,20 @@
   font-family: inherit;
   box-shadow: 0 0 30px rgba(99, 179, 237, 0.3);
   transition: box-shadow 0.2s;
+
+  @keyframes submitPulse {
+    0%,
+    100% {
+      box-shadow: 0 0 30px rgba(99, 179, 237, 0.3);
+    }
+    50% {
+      box-shadow: 0 0 50px rgba(99, 179, 237, 0.7);
+    }
+  }
+
+  .submit-btn:not(:disabled) {
+    animation: submitPulse 1.5s ease-in-out infinite;
+  }
 }
 .submit-btn:hover:not(:disabled) {
   box-shadow: 0 0 50px rgba(99, 179, 237, 0.6);
@@ -232,8 +256,7 @@
 .popup-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -241,71 +264,156 @@
 }
 
 .popup {
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(99, 179, 237, 0.3);
-  border-radius: 24px;
-  padding: 48px 56px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
+  background: linear-gradient(135deg, #0d2157, #060e2b);
+  border: 1px solid rgba(99, 179, 237, 0.4);
+  border-radius: 20px;
+  padding: 40px;
   text-align: center;
-  box-shadow: 0 0 60px rgba(59, 130, 246, 0.2);
   min-width: 320px;
+  box-shadow: 0 0 60px rgba(59, 130, 246, 0.3);
 }
 
 .popup h2 {
-  font-size: 26px;
-  font-weight: 700;
-  color: white;
+  font-size: 22px;
+  color: #63b3ed;
+  margin-bottom: 16px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
 }
 
 .popup-score {
   font-size: 64px;
   font-weight: 700;
-  color: #63b3ed;
-  text-shadow: 0 0 30px rgba(99, 179, 237, 0.6);
+  color: white;
+  line-height: 1;
 }
 
 .popup-label {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 8px;
+  margin-bottom: 32px;
   letter-spacing: 2px;
   text-transform: uppercase;
 }
 
 .popup-buttons {
   display: flex;
-  gap: 16px;
-  margin-top: 16px;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .popup-btn {
-  padding: 12px 28px;
+  padding: 12px 20px;
   border-radius: 12px;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   font-family: inherit;
   cursor: pointer;
   transition: box-shadow 0.2s;
-}
-
-.popup-btn.secondary {
-  background: transparent;
-  border: 2px solid #63b3ed;
-  color: #63b3ed;
-}
-.popup-btn.secondary:hover {
-  box-shadow: 0 0 24px rgba(99, 179, 237, 0.4);
 }
 
 .popup-btn.primary {
   background: linear-gradient(135deg, #1a6fd4, #1e40af);
   border: 2px solid #63b3ed;
   color: white;
-  box-shadow: 0 0 30px rgba(99, 179, 237, 0.3);
 }
-.popup-btn.primary:hover {
-  box-shadow: 0 0 50px rgba(99, 179, 237, 0.6);
+
+.popup-btn.secondary {
+  background: transparent;
+  border: 2px solid rgba(99, 179, 237, 0.4);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.popup-btn.outline {
+  background: transparent;
+  border: 2px solid #63b3ed;
+  color: #63b3ed;
+}
+
+.popup-btn:hover {
+  box-shadow: 0 0 20px rgba(99, 179, 237, 0.4);
+}
+
+.popup-result {
+  min-width: 480px;
+  max-width: 600px;
+  text-align: left;
+}
+
+.result-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.result-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(99, 179, 237, 0.2);
+  border-radius: 10px;
+  padding: 10px 16px;
+}
+
+.result-rank {
+  color: #63b3ed;
+  font-weight: 700;
+  min-width: 24px;
+}
+
+.result-question {
+  flex: 1;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.result-answer {
+  font-weight: 700;
+  color: #63b3ed;
+  white-space: nowrap;
+}
+
+.timeline-slot.drag-over {
+  border-color: #63b3ed;
+  box-shadow: 0 0 20px rgba(99, 179, 237, 0.5);
+  background: rgba(99, 179, 237, 0.08);
+}
+
+@keyframes slotPulse {
+  0% {
+    box-shadow: 0 0 0px rgba(99, 179, 237, 0);
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(99, 179, 237, 0.7);
+  }
+  100% {
+    box-shadow: 0 0 0px rgba(99, 179, 237, 0);
+  }
+}
+
+.timeline-slot.pulse {
+  animation: slotPulse 0.4s ease-out;
+}
+
+@keyframes waveGlow {
+  0% {
+    box-shadow: 0 0 0px rgba(99, 179, 237, 0);
+    border-color: rgba(99, 179, 237, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(99, 179, 237, 0.8);
+    border-color: #63b3ed;
+  }
+  100% {
+    box-shadow: 0 0 0px rgba(99, 179, 237, 0);
+    border-color: rgba(99, 179, 237, 0.5);
+  }
+}
+
+.timeline-slot.wave {
+  animation: waveGlow 0.6s ease-out forwards;
 }
