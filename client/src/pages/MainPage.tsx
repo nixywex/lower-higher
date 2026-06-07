@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './MainPage.css';
 
@@ -14,10 +14,16 @@ function MainPage() {
   const [facts, setFacts] = useState<Fact[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [sliding, setSliding] = useState(false);
   const [sortedAnswers, setSortedAnswers] = useState<(Fact | null)[]>([]);
   const [dragItem, setDragItem] = useState<Fact | null>(null);
-  const dragOverSlot = useRef<number | null>(null);
+  const [showPopup, setShowPopup] = useState(false);
+  const [score, setScore] = useState<number | null>(null);
+  const [rightAnswers, setRightAnswers] = useState<Fact[]>([]);
+  const [showResult, setShowResult] = useState(false);
+  const [dragSource, setDragSource] = useState<'stack' | number | null>(null);
+  const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
+  const [pulsedSlot, setPulsedSlot] = useState<number | null>(null);
+  const [waveActive, setWaveActive] = useState(false);
 
   useEffect(() => {
     fetch('http://localhost:3000/api/facts/round')
@@ -31,48 +37,47 @@ function MainPage() {
 
   const allAnswered = sortedAnswers.every((slot) => slot !== null);
 
-  const handleNextQuestion = () => {
-    if (currentIndex >= facts.length - 1) return;
-    setSliding(true);
-    setTimeout(() => {
-      setCurrentIndex((i) => i + 1);
-      setSliding(false);
-    }, 400);
+  useEffect(() => {
+    if (allAnswered && facts.length > 0) {
+      setWaveActive(true);
+      setTimeout(() => setWaveActive(false), facts.length * 100 + 400);
+    }
+  }, [allAnswered]);
+
+  const handleDragStartFromStack = () => {
+    if (currentIndex >= facts.length) return;
+    setDragItem(facts[currentIndex]);
+    setDragSource('stack');
   };
 
-  const handleDragStart = (fact: Fact) => {
+  const handleDragStartFromSlot = (fact: Fact, slotIndex: number) => {
     setDragItem(fact);
+    setDragSource(slotIndex);
   };
 
   const handleDropOnSlot = (slotIndex: number) => {
     if (!dragItem) return;
-
     const updated = [...sortedAnswers];
 
-    // Remove dragItem from any existing slot
-    const existingSlot = updated.findIndex((f) => f?.id === dragItem.id);
-    if (existingSlot !== -1) updated[existingSlot] = null;
-
-    // If slot is occupied, swap
-    const occupant = updated[slotIndex];
-    if (occupant && existingSlot !== -1) {
-      updated[existingSlot] = occupant;
+    if (dragSource === 'stack') {
+      if (!updated[slotIndex]) {
+        updated[slotIndex] = dragItem;
+        setSortedAnswers(updated);
+        setPulsedSlot(slotIndex);
+        setTimeout(() => setPulsedSlot(null), 400);
+        setCurrentIndex((i) => i + 1);
+      }
+    } else if (typeof dragSource === 'number') {
+      const fromSlot = dragSource;
+      const occupant = updated[slotIndex];
+      updated[slotIndex] = dragItem;
+      updated[fromSlot] = occupant ?? null;
+      setSortedAnswers(updated);
     }
 
-    updated[slotIndex] = dragItem;
-    setSortedAnswers(updated);
     setDragItem(null);
+    setDragSource(null);
   };
-
-  const handleDropBackToPool = () => {
-    if (!dragItem) return;
-    const updated = sortedAnswers.map((f) => (f?.id === dragItem.id ? null : f));
-    setSortedAnswers(updated);
-    setDragItem(null);
-  };
-
-  const placedIds = new Set(sortedAnswers.filter(Boolean).map((f) => f!.id));
-  const poolFacts = facts.filter((f) => !placedIds.has(f.id));
 
   const handleSubmit = () => {
     const ids = sortedAnswers.filter(Boolean).map((f) => f!.id);
@@ -82,28 +87,50 @@ function MainPage() {
       body: JSON.stringify({ ids }),
     })
       .then((res) => res.json())
-      .then((data) => console.log(data));
+      .then((data) => {
+        setScore(data.score);
+        setRightAnswers(data.rightAnswers);
+        setShowPopup(true);
+      });
+  };
+
+  const handleNextGame = () => {
+    setShowPopup(false);
+    setShowResult(false);
+    setScore(null);
+    setRightAnswers([]);
+    setCurrentIndex(0);
+    setSortedAnswers([]);
+    setLoading(true);
+    fetch('http://localhost:3000/api/facts/round')
+      .then((res) => res.json())
+      .then((data: Fact[]) => {
+        setFacts(data);
+        setSortedAnswers(new Array(data.length).fill(null));
+        setLoading(false);
+      });
   };
 
   if (loading) return <div className="loading">Loading...</div>;
 
   return (
     <div className="game-wrapper">
-      {/* X Button */}
       <button className="exit-btn" onClick={() => navigate('/')}>
         ✕
       </button>
 
-      {/* Question Stack */}
       <div className="question-stack">
         {facts.slice(currentIndex, currentIndex + 3).map((fact, i) => (
           <div
             key={fact.id}
-            className={`question-card ${i === 0 ? (sliding ? 'slide-out' : 'active') : ''}`}
+            className={`question-card ${i === 0 ? 'active' : ''}`}
             style={{
               zIndex: 3 - i,
-              transform: `translateY(${i * 6}px) scale(${1 - i * 0.03})`,
+              transform: `translateY(${i * 8}px) scale(${1 - i * 0.04})`,
+              cursor: i === 0 ? 'grab' : 'default',
             }}
+            draggable={i === 0}
+            onDragStart={i === 0 ? handleDragStartFromStack : undefined}
           >
             {i === 0 && <p>{fact.question}</p>}
           </div>
@@ -111,49 +138,84 @@ function MainPage() {
         <div className="question-counter">
           {currentIndex + 1} / {facts.length}
         </div>
+        {showPopup && !showResult && (
+          <div className="popup-overlay">
+            <div className="popup">
+              <h2>Ergebnis</h2>
+              <p className="popup-score">{score}</p>
+              <p className="popup-label">Punkte</p>
+              <div className="popup-buttons">
+                <button className="popup-btn secondary" onClick={() => navigate('/')}>
+                  Exit
+                </button>
+                <button className="popup-btn outline" onClick={() => setShowResult(true)}>
+                  Result
+                </button>
+                <button className="popup-btn primary" onClick={handleNextGame}>
+                  Next Game
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showPopup && showResult && (
+          <div className="popup-overlay">
+            <div className="popup popup-result">
+              <h2>Richtige Reihenfolge</h2>
+              <div className="result-list">
+                {rightAnswers.map((fact, i) => (
+                  <div key={fact.id} className="result-item">
+                    <span className="result-rank">{i + 1}.</span>
+                    <span className="result-question">{fact.question}</span>
+                    <span className="result-answer">
+                      {fact.answer} {fact.unit}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="popup-buttons">
+                <button className="popup-btn secondary" onClick={() => navigate('/')}>
+                  Exit
+                </button>
+                <button className="popup-btn outline" onClick={() => setShowResult(false)}>
+                  ← Back
+                </button>
+                <button className="popup-btn primary" onClick={handleNextGame}>
+                  Next Game
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Main Game Area */}
       <div className="game-area">
-        {/* Answer Pool */}
-        <div
-          className="answer-pool"
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={handleDropBackToPool}
-        >
-          {poolFacts.map((fact) => (
-            <div
-              key={fact.id}
-              className="answer-chip"
-              draggable
-              onDragStart={() => handleDragStart(fact)}
-            >
-              {fact.answer}
-            </div>
-          ))}
-        </div>
-
-        {/* Timeline */}
         <div className="timeline-area">
-          <span className="timeline-label top">max</span>
+          <span className="timeline-label top">MAX</span>
           <div className="timeline-slots">
             {sortedAnswers.map((slot, i) => (
               <div
                 key={i}
-                className={`timeline-slot ${slot ? 'filled' : ''}`}
+                className={`timeline-slot ${slot ? 'filled' : ''} ${dragOverSlot === i ? 'drag-over' : ''} ${pulsedSlot === i ? 'pulse' : ''} ${waveActive ? 'wave' : ''}`}
+                style={waveActive ? { animationDelay: `${i * 100}ms` } : {}}
                 onDragOver={(e) => {
                   e.preventDefault();
-                  dragOverSlot.current = i;
+                  setDragOverSlot(i);
                 }}
-                onDrop={() => handleDropOnSlot(i)}
+                onDragLeave={() => setDragOverSlot(null)}
+                onDrop={() => {
+                  handleDropOnSlot(i);
+                  setDragOverSlot(null);
+                }}
               >
                 {slot ? (
                   <div
                     className="answer-chip placed"
                     draggable
-                    onDragStart={() => handleDragStart(slot)}
+                    onDragStart={() => handleDragStartFromSlot(slot, i)}
                   >
-                    {slot.answer}
+                    {slot.question}
                   </div>
                 ) : (
                   <span className="slot-placeholder">—</span>
@@ -161,18 +223,10 @@ function MainPage() {
               </div>
             ))}
           </div>
-          <span className="timeline-label bottom">min</span>
+          <span className="timeline-label bottom">MIN</span>
         </div>
 
-        {/* Right Side Buttons */}
         <div className="action-buttons">
-          <button
-            className="next-btn"
-            onClick={handleNextQuestion}
-            disabled={currentIndex >= facts.length - 1}
-          >
-            Next Question
-          </button>
           <button className="submit-btn" onClick={handleSubmit} disabled={!allAnswered}>
             Submit
           </button>
