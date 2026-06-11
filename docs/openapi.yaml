@@ -2,8 +2,13 @@ openapi: 3.1.0
 
 info:
   title: Lower-Higher API
-  description: REST-API für das Lower-Higher-Sortierspiel. Liefert Fakten für eine Spielrunde und bewertet die Nutzer-Sortierung serverseitig.
-  version: 1.0.0
+  description: >
+    REST-API für das Lower-Higher-Sortierspiel. Liefert Fakten für eine Spielrunde und bewertet die Nutzer-Sortierung serverseitig.
+
+
+    Für den Multiplayer-Modus wird zusätzlich Socket.io (WebSocket) verwendet.
+    Die Events und Payloads sind in `docs/websocket.md` dokumentiert.
+  version: 1.1.0
 
 servers:
   - url: http://localhost:3000
@@ -11,7 +16,7 @@ servers:
 
 tags:
   - name: Facts
-    description: Fakten laden und Runde auswerten
+    description: Fakten laden und Runde auswerten (Singleplayer)
 
 paths:
   /api/facts/round:
@@ -176,3 +181,71 @@ components:
           type: integer
           description: Erreichte Punktzahl dieser Runde
           example: 7850
+
+    # --- Multiplayer (Socket.io) ---
+    # Vollständige Event-Dokumentation: docs/websocket.md
+
+    RoomCode:
+      type: object
+      description: Vom Server generierter Raum-Code nach createRoom
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          description: 4-stelliger alphanumerischer Code
+          example: X7K2
+
+    RoomReady:
+      type: object
+      description: Wird an beide Spieler gesendet, sobald der Gast beigetreten ist
+      required:
+        - facts
+      properties:
+        facts:
+          type: array
+          description: Die Fakten dieser Runde (ohne Antwortzahlen)
+          items:
+            $ref: '#/components/schemas/FactForClient'
+          minItems: 7
+          maxItems: 7
+
+    GameResult:
+      type: object
+      description: Wird an beide Spieler gesendet, sobald beide ihre Reihenfolge eingereicht haben
+      required:
+        - rightAnswers
+        - scores
+        - hostId
+        - guestId
+      properties:
+        rightAnswers:
+          type: array
+          description: Fakten in der korrekten aufsteigenden Reihenfolge inkl. Antwortzahlen
+          items:
+            $ref: '#/components/schemas/Fact'
+        scores:
+          type: object
+          description: Score pro Socket-ID
+          additionalProperties:
+            type: integer
+          example:
+            abc123: 62000
+            def456: 81000
+        hostId:
+          type: string
+          description: Socket-ID des Hosts
+          example: abc123
+        guestId:
+          type: string
+          description: Socket-ID des Gastes
+          example: def456
+
+    SocketError:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: Room not found or already full
