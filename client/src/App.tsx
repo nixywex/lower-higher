@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import StartPage from './pages/StartPage';
 import MainPage from './pages/MainPage';
 import MultiplayerPage from './pages/MultiplayerPage';
-<Route path="/multiplayer" element={<MultiplayerPage />} />;
 import './App.css';
 
 function App() {
@@ -11,6 +10,7 @@ function App() {
       <Routes>
         <Route path="/" element={<StartPage />} />
         <Route path="/game" element={<MainPage />} />
+        <Route path="/multiplayer" element={<MultiplayerPage />} />
       </Routes>
     </BrowserRouter>
   );
