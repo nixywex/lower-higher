@@ -39,10 +39,11 @@ function MainPage() {
 
   useEffect(() => {
     if (allAnswered && facts.length > 0) {
-      setWaveActive(true);
+      const timer = setTimeout(() => setWaveActive(true), 0);
       setTimeout(() => setWaveActive(false), facts.length * 100 + 400);
+      return () => clearTimeout(timer);
     }
-  }, [allAnswered]);
+  }, [allAnswered, facts.length]);
 
   const handleDragStartFromStack = () => {
     if (currentIndex >= facts.length) return;
@@ -232,23 +233,6 @@ function MainPage() {
           </button>
         </div>
       </div>
-      {showPopup && (
-        <div className="popup-overlay">
-          <div className="popup">
-            <h2>Ergebnis</h2>
-            <p className="popup-score">{score ?? 1234}</p>
-            <p className="popup-label">Punkte</p>
-            <div className="popup-buttons">
-              <button className="popup-btn secondary" onClick={() => navigate('/')}>
-                Exit
-              </button>
-              <button className="popup-btn primary" onClick={() => window.location.reload()}>
-                Next Game
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
