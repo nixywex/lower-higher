@@ -28,6 +28,14 @@ function StartPage() {
           Singleplayer
           <span className="btn-arrow">›</span>
         </button>
+        <button
+          className="start-button multiplayer-button"
+          onClick={() => navigate('/multiplayer')}
+        >
+          <span className="btn-icon">👥</span>
+          Multiplayer
+          <span className="btn-arrow">›</span>
+        </button>
         <p className="press-start">· Drücke Start, um das Spiel zu starten ·</p>
       </div>
     </div>

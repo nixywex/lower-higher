@@ -181,3 +181,25 @@ h2 {
   font-weight: 400;
   letter-spacing: 1px;
 }
+
+.multiplayer-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 18px;
+  font-size: 18px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #1a6fd4, #1e40af);
+  border: 2px solid #63b3ed;
+  border-radius: 14px;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 0 30px rgba(99, 179, 237, 0.5);
+  transition: box-shadow 0.3s ease;
+}
+
+.multiplayer-button:hover {
+  box-shadow: 0 0 50px rgba(99, 179, 237, 0.8);
+}
