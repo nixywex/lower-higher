@@ -81,6 +81,9 @@
   align-items: flex-start;
   width: 100%;
   max-width: 920px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .answer-chip {
@@ -95,9 +98,6 @@
   text-align: center;
   user-select: none;
   transition: box-shadow 0.2s;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .answer-chip:hover {
@@ -110,31 +110,32 @@
 }
 
 .answer-chip.placed {
-  width: 100%;
-  height: 100%;
+  width: calc(100% - 8px);
+  height: auto;
   display: flex;
   align-items: center;
+  align-self: stretch;
   justify-content: center;
   background: rgba(99, 179, 237, 0.2);
   border-color: rgba(99, 179, 237, 0.5);
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-word;
+  text-overflow: unset;
   overflow: hidden;
-  text-overflow: ellipsis;
-  padding: 0 16px;
-  border-radius: 8px; /* malo manji od slota da ima mali razmak */
+  padding: 4px 16px;
+  border-radius: 8px;
   margin: 4px;
   box-sizing: border-box;
-  width: calc(100% - 8px);
-  height: calc(100% - 8px);
 }
 
-/* Timeline */
 .timeline-area {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
   flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .timeline-label {
@@ -155,15 +156,15 @@
 }
 
 .timeline-slot {
-  height: 56px; /* fiksna visina */
-  min-height: unset; /* ukloni stari min-height */
+  height: auto;
+  min-height: 56px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px dashed rgba(99, 179, 237, 0.25);
   border-radius: 10px;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
-  overflow: hidden; /* da chip ne izlazi van slota */
+  overflow: hidden;
   transition:
     border-color 0.2s,
     box-shadow 0.2s;
