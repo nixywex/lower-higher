@@ -51,14 +51,20 @@ export function registerGameSocket(io: Server): void {
       try {
         const rightAnswers = await getRightAnswers(room.factIds);
         const scores: { [socketId: string]: number } = {};
+        const orders: { [socketId: string]: typeof rightAnswers } = {};
+        const factMap = new Map(rightAnswers.map((f) => [f.id, f]));
 
         for (const [socketId, player] of Object.entries(room.players)) {
           scores[socketId] = calculateScore(rightAnswers, player.submittedIds!, 10000);
+          orders[socketId] = (player.submittedIds ?? [])
+            .map((id) => factMap.get(id)!)
+            .filter(Boolean);
         }
 
         io.to(room.code).emit('gameResult', {
           rightAnswers,
           scores,
+          orders,
           hostId: room.hostId,
           guestId: room.guestId,
         });

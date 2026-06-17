@@ -17,13 +17,13 @@
 
 ### Server → Client
 
-| Event                | Payload                                                                                     | Wer empfängt          | Beschreibung                                       |
-| -------------------- | ------------------------------------------------------------------------------------------- | --------------------- | -------------------------------------------------- |
-| `roomCode`           | `{ code: string }`                                                                          | Host                  | Raum wurde erstellt.                               |
-| `roomReady`          | `{ facts: FactForClient[] }`                                                                | Beide                 | Gast ist beigetreten, Spiel kann starten.          |
-| `gameResult`         | `{ rightAnswers: Fact[], scores: { [socketId]: number }, hostId: string, guestId: string }` | Beide                 | Beide haben submitted, Ergebnis liegt vor.         |
-| `playerDisconnected` | –                                                                                           | Verbleibender Spieler | Gegner hat die Verbindung getrennt.                |
-| `error`              | `{ message: string }`                                                                       | Auslöser              | Ungültige Aktion (z.B. Raum voll, nicht gefunden). |
+| Event                | Payload                                                                                                                     | Wer empfängt          | Beschreibung                                       |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------- | --------------------- | -------------------------------------------------- |
+| `roomCode`           | `{ code: string }`                                                                                                          | Host                  | Raum wurde erstellt.                               |
+| `roomReady`          | `{ facts: FactForClient[] }`                                                                                                | Beide                 | Gast ist beigetreten, Spiel kann starten.          |
+| `gameResult`         | `{ rightAnswers: Fact[], scores: { [socketId]: number }, orders: { [socketId]: Fact[] }, hostId: string, guestId: string }` | Beide                 | Beide haben submitted, Ergebnis liegt vor.         |
+| `playerDisconnected` | –                                                                                                                           | Verbleibender Spieler | Gegner hat die Verbindung getrennt.                |
+| `error`              | `{ message: string }`                                                                                                       | Auslöser              | Ungültige Aktion (z.B. Raum voll, nicht gefunden). |
 
 ---
 
@@ -36,3 +36,15 @@ type Fact = { id: number; question: string; answer: number };
 ```
 
 `scores` ist ein Objekt mit der `socket.id` als Key – jeder Spieler kann seinen eigenen Score anhand von `socket.id` herauslesen.
+
+`orders` hat dasselbe Schema: Key ist die `socket.id`, Value ist die vom jeweiligen Spieler eingereichte Reihenfolge als `Fact[]` (inklusive `answer`). Um die Reihenfolge des Gegners zu lesen:
+
+```ts
+socket.on('gameResult', ({ rightAnswers, scores, orders, hostId, guestId }) => {
+  const myId = socket.id;
+  const opponentId = myId === hostId ? guestId : hostId;
+
+  const myOrder = orders[myId]; // eigene Reihenfolge
+  const opponentOrder = orders[opponentId]; // Reihenfolge des Gegners
+});
+```
