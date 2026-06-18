@@ -29,8 +29,10 @@ function MultiplayerPage() {
   const [myScore, setMyScore] = useState<number | null>(null);
   const [opponentScore, setOpponentScore] = useState<number | null>(null);
   const [rightAnswers, setRightAnswers] = useState<Fact[]>([]);
-  const [showResult, setShowResult] = useState(false);
   const [disconnected, setDisconnected] = useState(false);
+  const [waitingForOpponent, setWaitingForOpponent] = useState(false);
+  const [myOrder, setMyOrder] = useState<Fact[]>([]);
+  const [opponentOrder, setOpponentOrder] = useState<Fact[]>([]);
 
   useEffect(() => {
     socket = io('http://localhost:3000');
@@ -51,19 +53,24 @@ function MultiplayerPage() {
       ({
         rightAnswers,
         scores,
+        orders,
         hostId,
         guestId,
       }: {
         rightAnswers: Fact[];
         scores: Record<string, number>;
+        orders: Record<string, Fact[]>;
         hostId: string;
         guestId: string;
       }) => {
         const myId = socket!.id;
-        setMyScore(scores[myId!] ?? 0);
         const opponentId = myId === hostId ? guestId : hostId;
+        setMyScore(scores[myId!] ?? 0);
         setOpponentScore(scores[opponentId] ?? 0);
+        setMyOrder(orders[myId!] ?? []);
+        setOpponentOrder(orders[opponentId] ?? []);
         setRightAnswers(rightAnswers);
+        setWaitingForOpponent(false);
         setScreen('result');
       }
     );
@@ -125,6 +132,7 @@ function MultiplayerPage() {
   const handleSubmit = () => {
     const ids = sortedAnswers.filter(Boolean).map((f) => f!.id);
     socket?.emit('submitOrder', { ids });
+    setWaitingForOpponent(true);
   };
 
   // --- LOBBY ---
@@ -179,34 +187,29 @@ function MultiplayerPage() {
   if (screen === 'result')
     return (
       <div className="mp-wrapper">
-        <div className="mp-card mp-result-card">
-          {disconnected && <p className="mp-error">Gegner hat das Spiel verlassen.</p>}
-          {!showResult ? (
-            <>
-              <h2 className="mp-title">Ergebnis</h2>
-              <div className="mp-scores">
-                <div className="mp-score-box">
-                  <span className="mp-score-label">Du</span>
-                  <span className="mp-score-value">{myScore}</span>
-                </div>
-                <div className="mp-score-box opponent">
-                  <span className="mp-score-label">Gegner</span>
-                  <span className="mp-score-value">{opponentScore}</span>
-                </div>
+        <div className="popup-overlay">
+          <div className="popup mp-result-popup">
+            {disconnected && <p className="mp-error">Gegner hat das Spiel verlassen.</p>}
+            <h2>Ergebnis</h2>
+
+            <div className="mp-result-grid">
+              {/* Kolona levo — Du */}
+              <div className="mp-result-side">
+                <span className="mp-grid-label">Du</span>
+                {myOrder.map((fact, i) => (
+                  <div
+                    key={fact.id}
+                    className={`result-item ${fact.id === rightAnswers[i]?.id ? 'correct-row' : 'wrong-row'}`}
+                  >
+                    <span className="result-rank">{i + 1}.</span>
+                    <span className="result-question">{fact.question}</span>
+                  </div>
+                ))}
               </div>
-              <div className="mp-result-buttons">
-                <button className="mp-btn secondary" onClick={() => navigate('/')}>
-                  Exit
-                </button>
-                <button className="mp-btn outline" onClick={() => setShowResult(true)}>
-                  Result
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <h2 className="mp-title">Richtige Reihenfolge</h2>
-              <div className="result-list">
+
+              {/* Kolona sredina — tačan redosled */}
+              <div className="mp-result-center">
+                <span className="mp-grid-label">✓ Richtig</span>
                 {rightAnswers.map((fact, i) => (
                   <div key={fact.id} className="result-item">
                     <span className="result-rank">{i + 1}.</span>
@@ -215,16 +218,40 @@ function MultiplayerPage() {
                   </div>
                 ))}
               </div>
-              <div className="mp-result-buttons">
-                <button className="mp-btn secondary" onClick={() => navigate('/')}>
-                  Exit
-                </button>
-                <button className="mp-btn outline" onClick={() => setShowResult(false)}>
-                  ← Back
-                </button>
+
+              {/* Kolona desno — Gegner */}
+              <div className="mp-result-side">
+                <span className="mp-grid-label">Gegner</span>
+                {opponentOrder.map((fact, i) => (
+                  <div
+                    key={fact.id}
+                    className={`result-item ${fact.id === rightAnswers[i]?.id ? 'correct-row' : 'wrong-row'}`}
+                  >
+                    <span className="result-rank">{i + 1}.</span>
+                    <span className="result-question">{fact.question}</span>
+                  </div>
+                ))}
               </div>
-            </>
-          )}
+            </div>
+
+            {/* Scorevi */}
+            <div className="mp-scores">
+              <div className="mp-score-box">
+                <span className="mp-score-label">Du</span>
+                <span className="mp-score-value">{myScore}</span>
+              </div>
+              <div className="mp-score-box opponent">
+                <span className="mp-score-label">Gegner</span>
+                <span className="mp-score-value">{opponentScore}</span>
+              </div>
+            </div>
+
+            <div className="popup-buttons">
+              <button className="popup-btn secondary" onClick={() => navigate('/')}>
+                Exit
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -235,6 +262,7 @@ function MultiplayerPage() {
       <button className="exit-btn" onClick={() => navigate('/')}>
         ✕
       </button>
+      {waitingForOpponent && <div className="mp-waiting-banner">⏳ Warte auf Gegner...</div>}
       {disconnected && <div className="mp-disconnect-banner">Gegner hat das Spiel verlassen.</div>}
       <div className="question-stack">
         {facts.slice(currentIndex, currentIndex + 3).map((fact, i) => (
