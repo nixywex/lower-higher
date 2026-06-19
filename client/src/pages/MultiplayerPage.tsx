@@ -30,9 +30,13 @@ function MultiplayerPage() {
   const [opponentScore, setOpponentScore] = useState<number | null>(null);
   const [rightAnswers, setRightAnswers] = useState<Fact[]>([]);
   const [disconnected, setDisconnected] = useState(false);
-  const [waitingForOpponent, setWaitingForOpponent] = useState(false);
-  const [myOrder, setMyOrder] = useState<Fact[]>([]);
-  const [opponentOrder, setOpponentOrder] = useState<Fact[]>([]);
+  const didWin = (myScore ?? 0) > (opponentScore ?? 0);
+  const isDraw = myScore === opponentScore;
+  const [submitted, setSubmitted] = useState(false);
+  const [myAnswers, setMyAnswers] = useState<Fact[]>([]);
+  const [opponentAnswers, setOpponentAnswers] = useState<Fact[]>([]);
+  const [keyboardSelected, setKeyboardSelected] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
 
   useEffect(() => {
     socket = io('http://localhost:3000');
@@ -48,32 +52,17 @@ function MultiplayerPage() {
       setScreen('game');
     });
 
-    socket.on(
-      'gameResult',
-      ({
-        rightAnswers,
-        scores,
-        orders,
-        hostId,
-        guestId,
-      }: {
-        rightAnswers: Fact[];
-        scores: Record<string, number>;
-        orders: Record<string, Fact[]>;
-        hostId: string;
-        guestId: string;
-      }) => {
-        const myId = socket!.id;
-        const opponentId = myId === hostId ? guestId : hostId;
-        setMyScore(scores[myId!] ?? 0);
-        setOpponentScore(scores[opponentId] ?? 0);
-        setMyOrder(orders[myId!] ?? []);
-        setOpponentOrder(orders[opponentId] ?? []);
-        setRightAnswers(rightAnswers);
-        setWaitingForOpponent(false);
-        setScreen('result');
-      }
-    );
+    socket.on('gameResult', (data) => {
+      const { rightAnswers, scores, hostId, guestId, orders } = data;
+      const myId = socket!.id;
+      setMyScore(scores[myId!] ?? 0);
+      const opponentId = myId === hostId ? guestId : hostId;
+      setOpponentScore(scores[opponentId] ?? 0);
+      setMyAnswers(orders[myId!] ?? []);
+      setOpponentAnswers(orders[opponentId] ?? []);
+      setRightAnswers(rightAnswers);
+      setScreen('result');
+    });
 
     socket.on('playerDisconnected', () => setDisconnected(true));
 
@@ -132,9 +121,56 @@ function MultiplayerPage() {
   const handleSubmit = () => {
     const ids = sortedAnswers.filter(Boolean).map((f) => f!.id);
     socket?.emit('submitOrder', { ids });
-    setWaitingForOpponent(true);
+    setSubmitted(true);
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (screen !== 'game') return;
+
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        handleDragStartFromStack();
+        setKeyboardSelected(true);
+      }
+
+      if (e.key === 'Enter' && allAnswered && !dragItem) {
+        handleSubmit();
+      }
+
+      const num = parseInt(e.key);
+      if (!isNaN(num) && num >= 1 && num <= facts.length) {
+        if (dragItem) {
+          handleDropOnSlot(num - 1);
+          setKeyboardSelected(false);
+        } else if (sortedAnswers[num - 1]) {
+          setDragItem(sortedAnswers[num - 1]);
+          setDragSource(num - 1);
+          setKeyboardSelected(true);
+          setSelectedSlot(num - 1);
+        }
+      }
+      if (dragItem) {
+        handleDropOnSlot(num - 1);
+        setKeyboardSelected(false);
+        setSelectedSlot(null);
+      }
+
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        const firstFilled = sortedAnswers.findIndex((s) => s !== null);
+        if (firstFilled !== -1) {
+          const updated = [...sortedAnswers];
+          updated[firstFilled] = null;
+          setSortedAnswers(updated);
+          setCurrentIndex((i) => i - 1);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dragItem, showResult, sortedAnswers, facts.length, currentIndex]);
   // --- LOBBY ---
   if (screen === 'lobby')
     return (
@@ -156,6 +192,7 @@ function MultiplayerPage() {
               value={joinInput}
               onChange={(e) => setJoinInput(e.target.value)}
               maxLength={4}
+              onKeyDown={(e) => e.key === 'Enter' && handleJoinRoom()}
             />
             <button className="mp-btn secondary" onClick={handleJoinRoom}>
               Join
@@ -182,41 +219,85 @@ function MultiplayerPage() {
         </div>
       </div>
     );
-
   // --- RESULT ---
   if (screen === 'result')
     return (
       <div className="mp-wrapper">
-        <div className="popup-overlay">
-          <div className="popup mp-result-popup">
-            {disconnected && <p className="mp-error">Gegner hat das Spiel verlassen.</p>}
-            <h2>Ergebnis</h2>
-
-            <div className="mp-result-grid">
-              {/* Kolona levo — Du */}
-              <div className="mp-result-side">
-                <span className="mp-grid-label">Du</span>
-                {myOrder.map((fact, i) => (
-                  <div
-                    key={fact.id}
-                    className={`result-item ${fact.id === rightAnswers[i]?.id ? 'correct-row' : 'wrong-row'}`}
-                  >
-                    <span className="result-rank">{i + 1}.</span>
-                    <span className="result-question">{fact.question}</span>
-                  </div>
-                ))}
+        <div className="mp-card mp-result-card">
+          {disconnected && <p className="mp-error">Gegner hat das Spiel verlassen.</p>}
+          {!showResult ? (
+            <>
+              <h2 className={`mp-title ${didWin ? 'win' : isDraw ? 'draw' : 'lose'}`}>
+                {didWin ? '🏆 Du gewinnst!' : isDraw ? '🤝 Unentschieden!' : '😔 Nächstes Mal!'}
+              </h2>
+              <div className="mp-scores">
+                <div className="mp-score-box">
+                  <span className="mp-score-label">Du</span>
+                  <span className="mp-score-value">{myScore}</span>
+                </div>
+                <div className="mp-score-box opponent">
+                  <span className="mp-score-label">Gegner</span>
+                  <span className="mp-score-value">{opponentScore}</span>
+                </div>
               </div>
-
-              {/* Kolona sredina — tačan redosled */}
-              <div className="mp-result-center">
-                <span className="mp-grid-label">✓ Richtig</span>
-                {rightAnswers.map((fact, i) => (
-                  <div key={fact.id} className="result-item">
-                    <span className="result-rank">{i + 1}.</span>
-                    <span className="result-question">{fact.question}</span>
-                    <span className="result-answer">{fact.answer}</span>
-                  </div>
-                ))}
+              <div className="mp-result-buttons">
+                <button className="mp-btn secondary" onClick={() => navigate('/')}>
+                  Exit
+                </button>
+                <button className="mp-btn outline" onClick={() => setShowResult(true)}>
+                  Result
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="result-columns">
+                <div className="result-col">
+                  <h3>Du</h3>
+                  {myAnswers.map((fact, i) => {
+                    const isCorrect = fact?.id === rightAnswers[i]?.id;
+                    return (
+                      <div
+                        key={fact.id}
+                        className={`result-row ${isCorrect ? 'correct' : 'wrong'}`}
+                        style={{ animationDelay: `${i * 150}ms` }}
+                      >
+                        <span className="result-rank">{i + 1}.</span>
+                        <span className="result-question">{fact.question}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="result-col middle">
+                  <h3>Richtig</h3>
+                  {rightAnswers.map((fact, i) => (
+                    <div
+                      key={fact.id}
+                      className="result-row correct"
+                      style={{ animationDelay: `${i * 150}ms` }}
+                    >
+                      <span className="result-rank">{i + 1}.</span>
+                      <span className="result-question">{fact.question}</span>
+                      <span className="result-answer">{fact.answer}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="result-col">
+                  <h3>Gegner</h3>
+                  {opponentAnswers.map((fact, i) => {
+                    const isCorrect = fact?.id === rightAnswers[i]?.id;
+                    return (
+                      <div
+                        key={fact.id}
+                        className={`result-row ${isCorrect ? 'correct' : 'wrong'}`}
+                        style={{ animationDelay: `${i * 150}ms` }}
+                      >
+                        <span className="result-rank">{i + 1}.</span>
+                        <span className="result-question">{fact.question}</span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Kolona desno — Gegner */}
@@ -262,13 +343,18 @@ function MultiplayerPage() {
       <button className="exit-btn" onClick={() => navigate('/')}>
         ✕
       </button>
-      {waitingForOpponent && <div className="mp-waiting-banner">⏳ Warte auf Gegner...</div>}
+      <div className="progress-bar-wrapper">
+        <div
+          className="progress-bar-fill"
+          style={{ height: `${(currentIndex / facts.length) * 100}%` }}
+        />
+      </div>
       {disconnected && <div className="mp-disconnect-banner">Gegner hat das Spiel verlassen.</div>}
       <div className="question-stack">
         {facts.slice(currentIndex, currentIndex + 3).map((fact, i) => (
           <div
             key={fact.id}
-            className={`question-card ${i === 0 ? 'active' : ''}`}
+            className={`question-card ${i === 0 ? 'active' : ''} ${i === 0 && keyboardSelected ? 'keyboard-selected' : ''}`}
             style={{
               zIndex: 3 - i,
               transform: `translateY(${i * 8}px) scale(${1 - i * 0.04})`,
@@ -280,9 +366,6 @@ function MultiplayerPage() {
             {i === 0 && <p>{fact.question}</p>}
           </div>
         ))}
-        <div className="question-counter">
-          {currentIndex + 1} / {facts.length}
-        </div>
       </div>
       <div className="game-area">
         <div className="timeline-area">
@@ -291,7 +374,7 @@ function MultiplayerPage() {
             {sortedAnswers.map((slot, i) => (
               <div
                 key={i}
-                className={`timeline-slot ${slot ? 'filled' : ''} ${dragOverSlot === i ? 'drag-over' : ''} ${pulsedSlot === i ? 'pulse' : ''}`}
+                className={`timeline-slot ${slot ? 'filled' : ''} ${dragOverSlot === i ? 'drag-over' : ''} ${pulsedSlot === i ? 'pulse' : ''} ${selectedSlot === i ? 'keyboard-selected-slot' : ''}`}
                 onDragOver={(e) => {
                   e.preventDefault();
                   setDragOverSlot(i);
@@ -319,9 +402,20 @@ function MultiplayerPage() {
           <span className="timeline-label bottom">MIN</span>
         </div>
         <div className="action-buttons">
-          <button className="submit-btn" onClick={handleSubmit} disabled={!allAnswered}>
-            Submit
-          </button>
+          {submitted ? (
+            <div className="mp-waiting-submitted">
+              <div className="mp-spinner" />
+              <p>Warten auf Gegner...</p>
+            </div>
+          ) : (
+            <button className="submit-btn" onClick={handleSubmit} disabled={!allAnswered}>
+              Submit
+            </button>
+          )}
+          <p className="keyboard-hint">
+            Leertaste = Karte nehmen &nbsp;|&nbsp; 1-{facts.length} = Position wählen &nbsp;|&nbsp;
+            Entf = entfernen
+          </p>
         </div>
       </div>
     </div>

@@ -239,129 +239,124 @@
   z-index: 50;
 }
 
-.mp-waiting-banner {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(99, 179, 237, 0.1);
-  border: 1px solid rgba(99, 179, 237, 0.5);
-  color: #63b3ed;
-  padding: 10px 28px;
-  border-radius: 10px;
-  font-size: 14px;
-  letter-spacing: 1px;
-  z-index: 50;
+.progress-bar-wrapper {
+  position: absolute;
+  left: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 200px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
 }
 
-/* Result modal */
-.mp-result-modal {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(99, 179, 237, 0.3);
-  border-radius: 20px;
-  padding: 40px 32px;
-  width: 90vw;
-  max-width: 860px;
+.progress-bar-fill {
+  width: 100%;
+  background: #a78bfa;
+  border-radius: 3px;
+  transition: height 0.3s ease;
+}
+.mp-title.win {
+  color: #4ade80;
+}
+
+.mp-title.lose {
+  color: #f87171;
+}
+
+.mp-title.draw {
+  color: #facc15;
+}
+
+.mp-waiting-submitted {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
-  box-shadow: 0 0 60px rgba(59, 130, 246, 0.15);
-}
-
-.mp-result-table {
-  display: flex;
   gap: 8px;
-  width: 100%;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
 }
 
-.mp-result-col {
-  flex: 1;
+.result-columns {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.mp-result-col.center {
-  flex: 1.4;
-}
-
-.mp-col-label {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.4);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  text-align: center;
-  margin-bottom: 4px;
-}
-
-.mp-result-cell {
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 8px;
-  padding: 8px 10px;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.75);
-  text-align: center;
-}
-
-.mp-result-cell.correct {
-  display: flex;
-  justify-content: space-between;
-  background: rgba(99, 179, 237, 0.08);
-  border: 1px solid rgba(99, 179, 237, 0.2);
-}
-
-.mp-result-cell.my {
-  border: 1px solid rgba(99, 179, 237, 0.15);
-}
-
-.mp-result-cell.opponent {
-  border: 1px solid rgba(252, 129, 129, 0.15);
-}
-
-.mp-answer {
-  color: #63b3ed;
-  font-weight: 700;
-}
-.mp-result-popup {
-  min-width: min(95vw, 900px);
-  max-width: 95vw;
-  max-height: 90vh;
-  overflow-y: auto;
-  text-align: left;
-}
-
-.mp-result-grid {
-  display: grid;
-  grid-template-columns: 1fr 1.3fr 1fr;
-  gap: 12px;
+  gap: 32px;
   width: 100%;
   margin-bottom: 24px;
 }
 
-.mp-result-side,
-.mp-result-center {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+.result-col {
+  flex: 1;
 }
 
-.mp-grid-label {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.4);
-  letter-spacing: 2px;
+.result-col h3 {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 12px;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.result-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  opacity: 0;
+  transform: translateX(-12px);
+  animation: slide-in 0.3s ease forwards;
+}
+
+.result-row.correct {
+  background: rgba(74, 222, 128, 0.15);
+  border-left: 3px solid #4ade80;
+}
+
+.result-row.wrong {
+  background: rgba(248, 113, 113, 0.15);
+  border-left: 3px solid #f87171;
+}
+
+@keyframes slide-in {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.result-col.middle {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  padding: 8px;
+}
+
+.result-answer {
+  margin-left: auto;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+}
+.mp-result-card {
+  max-width: 95vw;
+  width: 95vw;
+}
+.keyboard-hint {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.3);
+  margin-top: 8px;
   text-align: center;
-  margin-bottom: 4px;
-  display: block;
 }
 
-.result-item.correct-row {
-  border-color: rgba(72, 199, 142, 0.4);
-  background: rgba(72, 199, 142, 0.06);
+.question-card.keyboard-selected {
+  outline: 2px solid #a78bfa;
+  box-shadow: 0 0 12px rgba(167, 139, 250, 0.5);
 }
 
-.result-item.wrong-row {
-  border-color: rgba(252, 129, 129, 0.3);
-  background: rgba(252, 129, 129, 0.04);
+.timeline-slot.keyboard-selected-slot {
+  outline: 2px solid #a78bfa;
+  box-shadow: 0 0 12px rgba(167, 139, 250, 0.4);
 }

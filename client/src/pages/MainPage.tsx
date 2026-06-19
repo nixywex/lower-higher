@@ -24,6 +24,8 @@ function MainPage() {
   const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
   const [pulsedSlot, setPulsedSlot] = useState<number | null>(null);
   const [waveActive, setWaveActive] = useState(false);
+  const [keyboardSelected, setKeyboardSelected] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
 
   useEffect(() => {
     fetch('http://localhost:3000/api/facts/round')
@@ -36,14 +38,6 @@ function MainPage() {
   }, []);
 
   const allAnswered = sortedAnswers.every((slot) => slot !== null);
-
-  useEffect(() => {
-    if (allAnswered && facts.length > 0) {
-      const timer = setTimeout(() => setWaveActive(true), 0);
-      setTimeout(() => setWaveActive(false), facts.length * 100 + 400);
-      return () => clearTimeout(timer);
-    }
-  }, [allAnswered, facts.length]);
 
   const handleDragStartFromStack = () => {
     if (currentIndex >= facts.length) return;
@@ -112,6 +106,107 @@ function MainPage() {
       });
   };
 
+  useEffect(() => {
+    if (allAnswered && facts.length > 0) {
+      const timer = setTimeout(() => setWaveActive(true), 0);
+      setTimeout(() => setWaveActive(false), facts.length * 100 + 400);
+      return () => clearTimeout(timer);
+    }
+  }, [allAnswered, facts.length]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (showPopup || showResult) return;
+
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        handleDragStartFromStack();
+        setKeyboardSelected(true);
+      }
+
+      if (e.key === 'Enter' && allAnswered && !dragItem) {
+        handleSubmit();
+      }
+
+      const num = parseInt(e.key);
+      if (!isNaN(num) && num >= 1 && num <= facts.length) {
+        if (dragItem) {
+          handleDropOnSlot(num - 1);
+          setKeyboardSelected(false);
+          setSelectedSlot(null);
+        } else if (sortedAnswers[num - 1]) {
+          setDragItem(sortedAnswers[num - 1]);
+          setDragSource(num - 1);
+          setKeyboardSelected(true);
+          setSelectedSlot(num - 1);
+        }
+      }
+
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        const firstFilled = sortedAnswers.findIndex((s) => s !== null);
+        if (firstFilled !== -1) {
+          const updated = [...sortedAnswers];
+          updated[firstFilled] = null;
+          setSortedAnswers(updated);
+          setCurrentIndex((i) => i - 1);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dragItem, showPopup, showResult, sortedAnswers, facts.length, currentIndex]);
+  if (showResult)
+    return (
+      <div className="game-wrapper">
+        <div className="result-comparison">
+          <div className="result-columns">
+            <div className="result-col">
+              <h3>Dein Ergebnis</h3>
+              {sortedAnswers.map((fact, i) => {
+                const isCorrect = fact?.id === rightAnswers[i]?.id;
+                return (
+                  <div
+                    key={i}
+                    className={`result-row ${isCorrect ? 'correct' : 'wrong'}`}
+                    style={{ animationDelay: `${i * 150}ms` }}
+                  >
+                    <span className="result-rank">{i + 1}.</span>
+                    <span className="result-question">{fact?.question}</span>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="result-col">
+              <h3>Richtige Reihenfolge</h3>
+              {rightAnswers.map((fact, i) => (
+                <div
+                  key={fact.id}
+                  className="result-row correct"
+                  style={{ animationDelay: `${i * 150}ms` }}
+                >
+                  <span className="result-rank">{i + 1}.</span>
+                  <span className="result-question">{fact.question}</span>
+                  <span className="result-answer">
+                    {fact.answer} {fact.unit}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="result-actions">
+            <button className="popup-btn secondary" onClick={() => navigate('/')}>
+              Exit
+            </button>
+            <button className="popup-btn primary" onClick={handleNextGame}>
+              Next Game
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+
   if (loading) return <div className="loading">Loading...</div>;
 
   return (
@@ -120,11 +215,18 @@ function MainPage() {
         ✕
       </button>
 
+      <div className="progress-bar-wrapper">
+        <div
+          className="progress-bar-fill"
+          style={{ height: `${(currentIndex / facts.length) * 100}%` }}
+        />
+      </div>
+
       <div className="question-stack">
         {facts.slice(currentIndex, currentIndex + 3).map((fact, i) => (
           <div
             key={fact.id}
-            className={`question-card ${i === 0 ? 'active' : ''}`}
+            className={`question-card ${i === 0 ? 'active' : ''} ${i === 0 && keyboardSelected ? 'keyboard-selected' : ''}`}
             style={{
               zIndex: 3 - i,
               transform: `translateY(${i * 8}px) scale(${1 - i * 0.04})`,
@@ -136,9 +238,6 @@ function MainPage() {
             {i === 0 && <p>{fact.question}</p>}
           </div>
         ))}
-        <div className="question-counter">
-          {currentIndex + 1} / {facts.length}
-        </div>
         {showPopup && !showResult && (
           <div className="popup-overlay">
             <div className="popup">
@@ -149,7 +248,13 @@ function MainPage() {
                 <button className="popup-btn secondary" onClick={() => navigate('/')}>
                   Exit
                 </button>
-                <button className="popup-btn outline" onClick={() => setShowResult(true)}>
+                <button
+                  className="popup-btn outline"
+                  onClick={() => {
+                    setShowPopup(false);
+                    setShowResult(true);
+                  }}
+                >
                   Result
                 </button>
                 <button className="popup-btn primary" onClick={handleNextGame}>
@@ -198,7 +303,7 @@ function MainPage() {
             {sortedAnswers.map((slot, i) => (
               <div
                 key={i}
-                className={`timeline-slot ${slot ? 'filled' : ''} ${dragOverSlot === i ? 'drag-over' : ''} ${pulsedSlot === i ? 'pulse' : ''} ${waveActive ? 'wave' : ''}`}
+                className={`timeline-slot ${slot ? 'filled' : ''} ${dragOverSlot === i ? 'drag-over' : ''} ${pulsedSlot === i ? 'pulse' : ''} ${waveActive ? 'wave' : ''} ${selectedSlot === i ? 'keyboard-selected-slot' : ''}`}
                 style={waveActive ? { animationDelay: `${i * 100}ms` } : {}}
                 onDragOver={(e) => {
                   e.preventDefault();
@@ -231,6 +336,10 @@ function MainPage() {
           <button className="submit-btn" onClick={handleSubmit} disabled={!allAnswered}>
             Submit
           </button>
+          <p className="keyboard-hint">
+            Space = Karte nehmen &nbsp;|&nbsp; 1-{facts.length} = Position wählen &nbsp;|&nbsp;
+            Delete = entfernen
+          </p>
         </div>
       </div>
     </div>
