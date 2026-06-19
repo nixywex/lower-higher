@@ -37,6 +37,7 @@ function MultiplayerPage() {
   const [opponentAnswers, setOpponentAnswers] = useState<Fact[]>([]);
   const [keyboardSelected, setKeyboardSelected] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
+  const [showResult, setShowResult] = useState(false);
 
   useEffect(() => {
     socket = io('http://localhost:3000');
@@ -170,7 +171,8 @@ function MultiplayerPage() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dragItem, showResult, sortedAnswers, facts.length, currentIndex]);
+  }, [dragItem, sortedAnswers, facts.length, currentIndex]);
+
   // --- LOBBY ---
   if (screen === 'lobby')
     return (
@@ -299,40 +301,16 @@ function MultiplayerPage() {
                   })}
                 </div>
               </div>
-
-              {/* Kolona desno — Gegner */}
-              <div className="mp-result-side">
-                <span className="mp-grid-label">Gegner</span>
-                {opponentOrder.map((fact, i) => (
-                  <div
-                    key={fact.id}
-                    className={`result-item ${fact.id === rightAnswers[i]?.id ? 'correct-row' : 'wrong-row'}`}
-                  >
-                    <span className="result-rank">{i + 1}.</span>
-                    <span className="result-question">{fact.question}</span>
-                  </div>
-                ))}
+              <div className="mp-result-buttons">
+                <button className="mp-btn secondary" onClick={() => navigate('/')}>
+                  Exit
+                </button>
+                <button className="mp-btn outline" onClick={() => setShowResult(false)}>
+                  ← Back
+                </button>
               </div>
-            </div>
-
-            {/* Scorevi */}
-            <div className="mp-scores">
-              <div className="mp-score-box">
-                <span className="mp-score-label">Du</span>
-                <span className="mp-score-value">{myScore}</span>
-              </div>
-              <div className="mp-score-box opponent">
-                <span className="mp-score-label">Gegner</span>
-                <span className="mp-score-value">{opponentScore}</span>
-              </div>
-            </div>
-
-            <div className="popup-buttons">
-              <button className="popup-btn secondary" onClick={() => navigate('/')}>
-                Exit
-              </button>
-            </div>
-          </div>
+            </>
+          )}
         </div>
       </div>
     );
