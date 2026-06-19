@@ -29,7 +29,6 @@ function MultiplayerPage() {
   const [myScore, setMyScore] = useState<number | null>(null);
   const [opponentScore, setOpponentScore] = useState<number | null>(null);
   const [rightAnswers, setRightAnswers] = useState<Fact[]>([]);
-  const [showResult, setShowResult] = useState(false);
   const [disconnected, setDisconnected] = useState(false);
   const didWin = (myScore ?? 0) > (opponentScore ?? 0);
   const isDraw = myScore === opponentScore;
@@ -300,16 +299,40 @@ function MultiplayerPage() {
                   })}
                 </div>
               </div>
-              <div className="mp-result-buttons">
-                <button className="mp-btn secondary" onClick={() => navigate('/')}>
-                  Exit
-                </button>
-                <button className="mp-btn outline" onClick={() => setShowResult(false)}>
-                  ← Back
-                </button>
+
+              {/* Kolona desno — Gegner */}
+              <div className="mp-result-side">
+                <span className="mp-grid-label">Gegner</span>
+                {opponentOrder.map((fact, i) => (
+                  <div
+                    key={fact.id}
+                    className={`result-item ${fact.id === rightAnswers[i]?.id ? 'correct-row' : 'wrong-row'}`}
+                  >
+                    <span className="result-rank">{i + 1}.</span>
+                    <span className="result-question">{fact.question}</span>
+                  </div>
+                ))}
               </div>
-            </>
-          )}
+            </div>
+
+            {/* Scorevi */}
+            <div className="mp-scores">
+              <div className="mp-score-box">
+                <span className="mp-score-label">Du</span>
+                <span className="mp-score-value">{myScore}</span>
+              </div>
+              <div className="mp-score-box opponent">
+                <span className="mp-score-label">Gegner</span>
+                <span className="mp-score-value">{opponentScore}</span>
+              </div>
+            </div>
+
+            <div className="popup-buttons">
+              <button className="popup-btn secondary" onClick={() => navigate('/')}>
+                Exit
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
