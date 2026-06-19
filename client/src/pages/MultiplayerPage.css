@@ -238,3 +238,125 @@
   font-size: 14px;
   z-index: 50;
 }
+
+.progress-bar-wrapper {
+  position: absolute;
+  left: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 200px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+
+.progress-bar-fill {
+  width: 100%;
+  background: #a78bfa;
+  border-radius: 3px;
+  transition: height 0.3s ease;
+}
+.mp-title.win {
+  color: #4ade80;
+}
+
+.mp-title.lose {
+  color: #f87171;
+}
+
+.mp-title.draw {
+  color: #facc15;
+}
+
+.mp-waiting-submitted {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+}
+
+.result-columns {
+  display: flex;
+  gap: 32px;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.result-col {
+  flex: 1;
+}
+
+.result-col h3 {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.result-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  opacity: 0;
+  transform: translateX(-12px);
+  animation: slide-in 0.3s ease forwards;
+}
+
+.result-row.correct {
+  background: rgba(74, 222, 128, 0.15);
+  border-left: 3px solid #4ade80;
+}
+
+.result-row.wrong {
+  background: rgba(248, 113, 113, 0.15);
+  border-left: 3px solid #f87171;
+}
+
+@keyframes slide-in {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.result-col.middle {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  padding: 8px;
+}
+
+.result-answer {
+  margin-left: auto;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+}
+.mp-result-card {
+  max-width: 95vw;
+  width: 95vw;
+}
+.keyboard-hint {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.3);
+  margin-top: 8px;
+  text-align: center;
+}
+
+.question-card.keyboard-selected {
+  outline: 2px solid #a78bfa;
+  box-shadow: 0 0 12px rgba(167, 139, 250, 0.5);
+}
+
+.timeline-slot.keyboard-selected-slot {
+  outline: 2px solid #a78bfa;
+  box-shadow: 0 0 12px rgba(167, 139, 250, 0.4);
+}
