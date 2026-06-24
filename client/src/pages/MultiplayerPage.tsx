@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
+import { API_URL } from '../config';
 import './MultiplayerPage.css';
 
 interface Fact {
@@ -40,7 +41,7 @@ function MultiplayerPage() {
   const [showResult, setShowResult] = useState(false);
 
   useEffect(() => {
-    socket = io('http://localhost:3000');
+    socket = io(API_URL);
 
     socket.on('roomCode', ({ code }: { code: string }) => {
       setRoomCode(code);

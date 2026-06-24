@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_URL } from '../config';
 import './MainPage.css';
 
 interface Fact {
@@ -26,9 +27,8 @@ function MainPage() {
   const [waveActive, setWaveActive] = useState(false);
   const [keyboardSelected, setKeyboardSelected] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
-
   useEffect(() => {
-    fetch('http://localhost:3000/api/facts/round')
+    fetch(`${API_URL}/api/facts/round`)
       .then((res) => res.json())
       .then((data: Fact[]) => {
         setFacts(data);
@@ -76,7 +76,7 @@ function MainPage() {
 
   const handleSubmit = () => {
     const ids = sortedAnswers.filter(Boolean).map((f) => f!.id);
-    fetch('http://localhost:3000/api/facts/submit', {
+    fetch(`${API_URL}/api/facts/submit`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ids }),
@@ -97,7 +97,7 @@ function MainPage() {
     setCurrentIndex(0);
     setSortedAnswers([]);
     setLoading(true);
-    fetch('http://localhost:3000/api/facts/round')
+    fetch(`${API_URL}/api/facts/round`)
       .then((res) => res.json())
       .then((data: Fact[]) => {
         setFacts(data);

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "bun --hot index.ts",
     "build": "bun build index.ts --outdir dist",
-    "start": "bun index.ts",
+    "start": "bun run index.ts",
     "test": "jest"
   },
   "devDependencies": {
