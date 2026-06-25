@@ -145,17 +145,13 @@ function MultiplayerPage() {
         if (dragItem) {
           handleDropOnSlot(num - 1);
           setKeyboardSelected(false);
+          setSelectedSlot(null);
         } else if (sortedAnswers[num - 1]) {
           setDragItem(sortedAnswers[num - 1]);
           setDragSource(num - 1);
           setKeyboardSelected(true);
           setSelectedSlot(num - 1);
         }
-      }
-      if (dragItem) {
-        handleDropOnSlot(num - 1);
-        setKeyboardSelected(false);
-        setSelectedSlot(null);
       }
 
       if (e.key === 'Delete' || e.key === 'Backspace') {
