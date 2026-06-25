@@ -2,11 +2,13 @@ import type { Room, Player, FactForClient } from '../types/index';
 
 const rooms = new Map<string, Room>();
 
+const ROOM_CODE_LENGTH = 4;
+const ROOM_CODE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
 function generateRoomCode(): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let code = '';
-  for (let i = 0; i < 4; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
+  for (let i = 0; i < ROOM_CODE_LENGTH; i++) {
+    code += ROOM_CODE_CHARS[Math.floor(Math.random() * ROOM_CODE_CHARS.length)];
   }
   return code;
 }
@@ -24,7 +26,7 @@ export function createRoom(hostSocketId: string, clientFacts: FactForClient[]): 
     factIds: clientFacts.map((f) => f.id),
     clientFacts,
     players: {
-      [hostSocketId]: { socketId: hostSocketId, submittedIds: null },
+      [hostSocketId]: { socketId: hostSocketId },
     },
     state: 'waiting',
   };
@@ -38,7 +40,7 @@ export function joinRoom(code: string, guestSocketId: string): Room | null {
   if (!room || room.guestId !== null || room.state !== 'waiting') return null;
 
   room.guestId = guestSocketId;
-  room.players[guestSocketId] = { socketId: guestSocketId, submittedIds: null };
+  room.players[guestSocketId] = { socketId: guestSocketId };
   room.state = 'playing';
 
   return room;
@@ -53,7 +55,7 @@ export function recordSubmit(socketId: string, ids: number[]): Room | null {
 }
 
 export function bothSubmitted(room: Room): boolean {
-  return Object.values(room.players).every((p) => p.submittedIds !== null);
+  return Object.values(room.players).every((p) => p.submittedIds !== undefined);
 }
 
 export function removeRoom(code: string): void {
