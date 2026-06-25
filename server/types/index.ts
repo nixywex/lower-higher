@@ -1,4 +1,4 @@
-export interface File {
+export interface FactsFile {
   facts: [Fact];
 }
 
@@ -15,7 +15,7 @@ export interface FactForClient {
 
 export interface Player {
   socketId: string;
-  submittedIds: number[] | null;
+  submittedIds?: number[];
 }
 
 export interface Room {
@@ -24,6 +24,6 @@ export interface Room {
   guestId: string | null;
   factIds: number[];
   clientFacts: FactForClient[];
-  players: { [socketId: string]: Player };
+  players: Record<string, Player>;
   state: 'waiting' | 'playing' | 'finished';
 }

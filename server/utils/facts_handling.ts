@@ -1,5 +1,5 @@
-import { mapClientFacts } from '../utils/mapping';
-import { getAllFacts } from '../utils/storing';
+import { mapClientFacts } from './mapping';
+import { getAllFacts } from './storing';
 import type { Fact, FactForClient } from '../types/index';
 
 export async function getRightAnswers(ids: number[]): Promise<Fact[]> {
@@ -9,14 +9,10 @@ export async function getRightAnswers(ids: number[]): Promise<Fact[]> {
 
 export async function getClientFacts(numberOfFacts: number): Promise<FactForClient[]> {
   const facts = await getAllFacts();
-  const ids = getRandomFactIds(facts.length, numberOfFacts);
-
-  return mapClientFacts(facts.filter((fact) => ids.includes(fact.id)));
-}
-
-export function getRandomFactIds(maxId: number, numberOfIds: number): number[] {
-  let ids = [];
-  for (let i = 0; i < numberOfIds; i++) ids.push(Math.floor(Math.random() * maxId));
-
-  return ids;
+  const pool = [...facts];
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return mapClientFacts(pool.slice(0, numberOfFacts));
 }
