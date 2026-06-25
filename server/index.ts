@@ -7,19 +7,16 @@ import cors from 'cors';
 
 const app = express();
 const httpServer = createServer(app);
+const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:5173';
 const io = new Server(httpServer, {
-  cors: { origin: '*' },
+  cors: { origin: corsOrigin },
 });
 const port = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 
-app.use(
-  cors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
-  })
-);
+app.use(cors({ origin: corsOrigin }));
 app.use(express.json());
 
-app.get('/', async (_: Request, res: Response) => {
+app.get('/', (_: Request, res: Response) => {
   res.send('Lower-Higher');
 });
 
