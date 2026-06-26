@@ -54,10 +54,11 @@ paths:
         '500':
           description: Interner Serverfehler
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
-              example: 'Unexpected exception'
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: 'Unexpected exception'
 
   /api/facts/submit:
     post:
@@ -107,16 +108,41 @@ paths:
                     question: 'Wie viele Meter tief ist der Mariannengraben?'
                     answer: 11034
                 score: 7850
+        '400':
+          description: Ungültige Eingabe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidFormat:
+                  summary: ids kein nicht-leeres Zahlen-Array
+                  value:
+                    message: 'ids must be a non-empty array of numbers'
+                unknownIds:
+                  summary: Eine oder mehrere IDs existieren nicht
+                  value:
+                    message: 'One or more ids do not exist'
         '500':
           description: Interner Serverfehler
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
-              example: 'Unexpected exception'
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: 'Unexpected exception'
 
 components:
   schemas:
+    ErrorResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: 'Unexpected exception'
+
     FactForClient:
       type: object
       description: Ein Fakt ohne Antwortzahl – wird ans Frontend gesendet
@@ -242,10 +268,4 @@ components:
           example: def456
 
     SocketError:
-      type: object
-      required:
-        - message
-      properties:
-        message:
-          type: string
-          example: Room not found or already full
+      $ref: '#/components/schemas/ErrorResponse'

@@ -38,6 +38,11 @@ export function registerGameSocket(io: Server): void {
     });
 
     socket.on('submitOrder', async (data: { ids: number[] }) => {
+      if (!Array.isArray(data?.ids)) {
+        socket.emit('gameError', { message: 'ids must be an array' });
+        return;
+      }
+
       const room = recordSubmit(socket.id, data.ids);
 
       if (!room) {

@@ -23,7 +23,7 @@
 | `roomReady`          | `{ facts: FactForClient[] }`                                                                                                | Beide                 | Gast ist beigetreten, Spiel kann starten.          |
 | `gameResult`         | `{ rightAnswers: Fact[], scores: { [socketId]: number }, orders: { [socketId]: Fact[] }, hostId: string, guestId: string }` | Beide                 | Beide haben submitted, Ergebnis liegt vor.         |
 | `playerDisconnected` | –                                                                                                                           | Verbleibender Spieler | Gegner hat die Verbindung getrennt.                |
-| `error`              | `{ message: string }`                                                                                                       | Auslöser              | Ungültige Aktion (z.B. Raum voll, nicht gefunden). |
+| `gameError`          | `{ message: string }`                                                                                                       | Auslöser              | Ungültige Aktion (z.B. Raum voll, nicht gefunden). |
 
 ---
 
