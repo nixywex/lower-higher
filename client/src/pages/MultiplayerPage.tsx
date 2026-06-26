@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { API_URL } from '../config';
@@ -107,6 +107,15 @@ function MultiplayerPage() {
         setPulsedSlot(slotIndex);
         setTimeout(() => setPulsedSlot(null), 400);
         setCurrentIndex((i) => i + 1);
+      } else {
+        const displaced = updated[slotIndex];
+        updated[slotIndex] = dragItem;
+        setSortedAnswers(updated);
+        const newFacts = [...facts];
+        newFacts[currentIndex] = displaced!;
+        setFacts(newFacts);
+        setPulsedSlot(slotIndex);
+        setTimeout(() => setPulsedSlot(null), 400);
       }
     } else if (typeof dragSource === 'number') {
       const occupant = updated[slotIndex];
@@ -168,7 +177,7 @@ function MultiplayerPage() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dragItem, sortedAnswers, facts.length, currentIndex]);
+  }, [dragItem, sortedAnswers, facts, currentIndex]);
 
   // --- LOBBY ---
   if (screen === 'lobby')
@@ -250,53 +259,44 @@ function MultiplayerPage() {
             </>
           ) : (
             <>
-              <div className="result-columns">
-                <div className="result-col">
-                  <h3>Du</h3>
-                  {myAnswers.map((fact, i) => {
-                    const isCorrect = fact?.id === rightAnswers[i]?.id;
-                    return (
+              <div className="result-grid result-grid-3">
+                <div className="result-col-header">Du</div>
+                <div className="result-col-header">Richtig</div>
+                <div className="result-col-header">Gegner</div>
+                {rightAnswers.map((rightFact, i) => {
+                  const myFact = myAnswers[i];
+                  const opFact = opponentAnswers[i];
+                  const myCorrect = myFact?.id === rightFact?.id;
+                  const opCorrect = opFact?.id === rightFact?.id;
+                  return (
+                    <Fragment key={i}>
                       <div
-                        key={fact.id}
-                        className={`result-row ${isCorrect ? 'correct' : 'wrong'}`}
+                        className={`result-row ${myCorrect ? 'correct' : 'wrong'}`}
                         style={{ animationDelay: `${i * 150}ms` }}
                       >
                         <span className="result-rank">{i + 1}.</span>
-                        <span className="result-question">{fact.question}</span>
+                        <span className="result-question">{myFact?.question}</span>
                       </div>
-                    );
-                  })}
-                </div>
-                <div className="result-col middle">
-                  <h3>Richtig</h3>
-                  {rightAnswers.map((fact, i) => (
-                    <div
-                      key={fact.id}
-                      className="result-row correct"
-                      style={{ animationDelay: `${i * 150}ms` }}
-                    >
-                      <span className="result-rank">{i + 1}.</span>
-                      <span className="result-question">{fact.question}</span>
-                      <span className="result-answer">{fact.answer?.toLocaleString('de-DE')}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="result-col">
-                  <h3>Gegner</h3>
-                  {opponentAnswers.map((fact, i) => {
-                    const isCorrect = fact?.id === rightAnswers[i]?.id;
-                    return (
                       <div
-                        key={fact.id}
-                        className={`result-row ${isCorrect ? 'correct' : 'wrong'}`}
+                        className="result-row correct"
                         style={{ animationDelay: `${i * 150}ms` }}
                       >
                         <span className="result-rank">{i + 1}.</span>
-                        <span className="result-question">{fact.question}</span>
+                        <span className="result-question">{rightFact.question}</span>
+                        <span className="result-answer">
+                          {rightFact.answer?.toLocaleString('de-DE')}
+                        </span>
                       </div>
-                    );
-                  })}
-                </div>
+                      <div
+                        className={`result-row ${opCorrect ? 'correct' : 'wrong'}`}
+                        style={{ animationDelay: `${i * 150}ms` }}
+                      >
+                        <span className="result-rank">{i + 1}.</span>
+                        <span className="result-question">{opFact?.question}</span>
+                      </div>
+                    </Fragment>
+                  );
+                })}
               </div>
               <div className="mp-result-buttons">
                 <button className="mp-btn secondary" onClick={() => navigate('/')}>

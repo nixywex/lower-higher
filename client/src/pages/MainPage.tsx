@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../config';
 import './MainPage.css';
@@ -61,6 +61,15 @@ function MainPage() {
         setPulsedSlot(slotIndex);
         setTimeout(() => setPulsedSlot(null), 400);
         setCurrentIndex((i) => i + 1);
+      } else {
+        const displaced = updated[slotIndex];
+        updated[slotIndex] = dragItem;
+        setSortedAnswers(updated);
+        const newFacts = [...facts];
+        newFacts[currentIndex] = displaced!;
+        setFacts(newFacts);
+        setPulsedSlot(slotIndex);
+        setTimeout(() => setPulsedSlot(null), 400);
       }
     } else if (typeof dragSource === 'number') {
       const fromSlot = dragSource;
@@ -156,44 +165,36 @@ function MainPage() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dragItem, showPopup, showResult, sortedAnswers, facts.length, currentIndex]);
+  }, [dragItem, showPopup, showResult, sortedAnswers, facts, currentIndex]);
   if (showResult)
     return (
       <div className="game-wrapper">
         <div className="result-comparison">
-          <div className="result-columns">
-            <div className="result-col">
-              <h3>Dein Ergebnis</h3>
-              {sortedAnswers.map((fact, i) => {
-                const isCorrect = fact?.id === rightAnswers[i]?.id;
-                return (
+          <div className="result-grid">
+            <div className="result-col-header">Dein Ergebnis</div>
+            <div className="result-col-header">Richtige Reihenfolge</div>
+            {sortedAnswers.map((fact, i) => {
+              const rightFact = rightAnswers[i];
+              const isCorrect = fact?.id === rightFact?.id;
+              return (
+                <Fragment key={i}>
                   <div
-                    key={i}
                     className={`result-row ${isCorrect ? 'correct' : 'wrong'}`}
                     style={{ animationDelay: `${i * 150}ms` }}
                   >
                     <span className="result-rank">{i + 1}.</span>
                     <span className="result-question">{fact?.question}</span>
                   </div>
-                );
-              })}
-            </div>
-            <div className="result-col">
-              <h3>Richtige Reihenfolge</h3>
-              {rightAnswers.map((fact, i) => (
-                <div
-                  key={fact.id}
-                  className="result-row correct"
-                  style={{ animationDelay: `${i * 150}ms` }}
-                >
-                  <span className="result-rank">{i + 1}.</span>
-                  <span className="result-question">{fact.question}</span>
-                  <span className="result-answer">
-                    {fact.answer.toLocaleString('de-DE')} {fact.unit}
-                  </span>
-                </div>
-              ))}
-            </div>
+                  <div className="result-row correct" style={{ animationDelay: `${i * 150}ms` }}>
+                    <span className="result-rank">{i + 1}.</span>
+                    <span className="result-question">{rightFact?.question}</span>
+                    <span className="result-answer">
+                      {rightFact?.answer.toLocaleString('de-DE')} {rightFact?.unit}
+                    </span>
+                  </div>
+                </Fragment>
+              );
+            })}
           </div>
           <div className="result-actions">
             <button className="popup-btn secondary" onClick={() => navigate('/')}>
