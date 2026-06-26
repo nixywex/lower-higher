@@ -78,7 +78,7 @@
 .game-area {
   display: flex;
   gap: 28px;
-  align-items: flex-start;
+  align-items: stretch;
   width: 100%;
   max-width: 920px;
   flex: 1;
@@ -151,8 +151,26 @@
   flex-direction: column;
   gap: 8px;
   width: 100%;
-  border-left: 3px solid rgba(99, 179, 237, 0.5);
-  padding-left: 16px;
+}
+
+.slot-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.slot-number {
+  min-width: 20px;
+  text-align: right;
+  color: rgba(99, 179, 237, 0.55);
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.slot-row .timeline-slot {
+  flex: 1;
 }
 
 .timeline-slot {
@@ -420,17 +438,14 @@
 }
 
 .progress-bar-wrapper {
-  position: absolute;
-  left: 24px;
-  top: 50%;
-  transform: translateY(-50%);
   width: 6px;
-  height: 200px;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(99, 179, 237, 0.12);
   border-radius: 3px;
   overflow: hidden;
   display: flex;
   align-items: flex-end;
+  flex-shrink: 0;
+  align-self: stretch;
 }
 
 .progress-bar-fill {

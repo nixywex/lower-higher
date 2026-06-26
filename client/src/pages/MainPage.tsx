@@ -189,7 +189,7 @@ function MainPage() {
                   <span className="result-rank">{i + 1}.</span>
                   <span className="result-question">{fact.question}</span>
                   <span className="result-answer">
-                    {fact.answer} {fact.unit}
+                    {fact.answer.toLocaleString('de-DE')} {fact.unit}
                   </span>
                 </div>
               ))}
@@ -214,13 +214,6 @@ function MainPage() {
       <button className="exit-btn" onClick={() => navigate('/')}>
         ✕
       </button>
-
-      <div className="progress-bar-wrapper">
-        <div
-          className="progress-bar-fill"
-          style={{ height: `${(currentIndex / facts.length) * 100}%` }}
-        />
-      </div>
 
       <div className="question-stack">
         {facts.slice(currentIndex, currentIndex + 3).map((fact, i) => (
@@ -297,35 +290,43 @@ function MainPage() {
       </div>
 
       <div className="game-area">
+        <div className="progress-bar-wrapper">
+          <div
+            className="progress-bar-fill"
+            style={{ height: `${(currentIndex / facts.length) * 100}%` }}
+          />
+        </div>
         <div className="timeline-area">
           <span className="timeline-label top">MAX</span>
           <div className="timeline-slots">
             {sortedAnswers.map((slot, i) => (
-              <div
-                key={i}
-                className={`timeline-slot ${slot ? 'filled' : ''} ${dragOverSlot === i ? 'drag-over' : ''} ${pulsedSlot === i ? 'pulse' : ''} ${waveActive ? 'wave' : ''} ${selectedSlot === i ? 'keyboard-selected-slot' : ''}`}
-                style={waveActive ? { animationDelay: `${i * 100}ms` } : {}}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setDragOverSlot(i);
-                }}
-                onDragLeave={() => setDragOverSlot(null)}
-                onDrop={() => {
-                  handleDropOnSlot(i);
-                  setDragOverSlot(null);
-                }}
-              >
-                {slot ? (
-                  <div
-                    className="answer-chip placed"
-                    draggable
-                    onDragStart={() => handleDragStartFromSlot(slot, i)}
-                  >
-                    {slot.question}
-                  </div>
-                ) : (
-                  <span className="slot-placeholder">—</span>
-                )}
+              <div key={i} className="slot-row">
+                <span className="slot-number">{i + 1}</span>
+                <div
+                  className={`timeline-slot ${slot ? 'filled' : ''} ${dragOverSlot === i ? 'drag-over' : ''} ${pulsedSlot === i ? 'pulse' : ''} ${waveActive ? 'wave' : ''} ${selectedSlot === i ? 'keyboard-selected-slot' : ''}`}
+                  style={waveActive ? { animationDelay: `${i * 100}ms` } : {}}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setDragOverSlot(i);
+                  }}
+                  onDragLeave={() => setDragOverSlot(null)}
+                  onDrop={() => {
+                    handleDropOnSlot(i);
+                    setDragOverSlot(null);
+                  }}
+                >
+                  {slot ? (
+                    <div
+                      className="answer-chip placed"
+                      draggable
+                      onDragStart={() => handleDragStartFromSlot(slot, i)}
+                    >
+                      {slot.question}
+                    </div>
+                  ) : (
+                    <span className="slot-placeholder">—</span>
+                  )}
+                </div>
               </div>
             ))}
           </div>

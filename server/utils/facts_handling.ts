@@ -4,7 +4,7 @@ import type { Fact, FactForClient } from '../types/index';
 
 export async function getRightAnswers(ids: number[]): Promise<Fact[]> {
   const facts = await getAllFacts();
-  return facts.filter((fact) => ids.includes(fact.id)).sort((a, b) => a.answer - b.answer);
+  return facts.filter((fact) => ids.includes(fact.id)).sort((a, b) => b.answer - a.answer);
 }
 
 export async function getClientFacts(numberOfFacts: number): Promise<FactForClient[]> {

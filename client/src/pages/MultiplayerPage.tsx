@@ -277,7 +277,7 @@ function MultiplayerPage() {
                     >
                       <span className="result-rank">{i + 1}.</span>
                       <span className="result-question">{fact.question}</span>
-                      <span className="result-answer">{fact.answer}</span>
+                      <span className="result-answer">{fact.answer?.toLocaleString('de-DE')}</span>
                     </div>
                   ))}
                 </div>
@@ -318,12 +318,6 @@ function MultiplayerPage() {
       <button className="exit-btn" onClick={() => navigate('/')}>
         ✕
       </button>
-      <div className="progress-bar-wrapper">
-        <div
-          className="progress-bar-fill"
-          style={{ height: `${(currentIndex / facts.length) * 100}%` }}
-        />
-      </div>
       {disconnected && <div className="mp-disconnect-banner">Gegner hat das Spiel verlassen.</div>}
       <div className="question-stack">
         {facts.slice(currentIndex, currentIndex + 3).map((fact, i) => (
@@ -343,34 +337,42 @@ function MultiplayerPage() {
         ))}
       </div>
       <div className="game-area">
+        <div className="progress-bar-wrapper">
+          <div
+            className="progress-bar-fill"
+            style={{ height: `${(currentIndex / facts.length) * 100}%` }}
+          />
+        </div>
         <div className="timeline-area">
           <span className="timeline-label top">MAX</span>
           <div className="timeline-slots">
             {sortedAnswers.map((slot, i) => (
-              <div
-                key={i}
-                className={`timeline-slot ${slot ? 'filled' : ''} ${dragOverSlot === i ? 'drag-over' : ''} ${pulsedSlot === i ? 'pulse' : ''} ${selectedSlot === i ? 'keyboard-selected-slot' : ''}`}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setDragOverSlot(i);
-                }}
-                onDragLeave={() => setDragOverSlot(null)}
-                onDrop={() => {
-                  handleDropOnSlot(i);
-                  setDragOverSlot(null);
-                }}
-              >
-                {slot ? (
-                  <div
-                    className="answer-chip placed"
-                    draggable
-                    onDragStart={() => handleDragStartFromSlot(slot, i)}
-                  >
-                    {slot.question}
-                  </div>
-                ) : (
-                  <span className="slot-placeholder">—</span>
-                )}
+              <div key={i} className="slot-row">
+                <span className="slot-number">{i + 1}</span>
+                <div
+                  className={`timeline-slot ${slot ? 'filled' : ''} ${dragOverSlot === i ? 'drag-over' : ''} ${pulsedSlot === i ? 'pulse' : ''} ${selectedSlot === i ? 'keyboard-selected-slot' : ''}`}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setDragOverSlot(i);
+                  }}
+                  onDragLeave={() => setDragOverSlot(null)}
+                  onDrop={() => {
+                    handleDropOnSlot(i);
+                    setDragOverSlot(null);
+                  }}
+                >
+                  {slot ? (
+                    <div
+                      className="answer-chip placed"
+                      draggable
+                      onDragStart={() => handleDragStartFromSlot(slot, i)}
+                    >
+                      {slot.question}
+                    </div>
+                  ) : (
+                    <span className="slot-placeholder">—</span>
+                  )}
+                </div>
               </div>
             ))}
           </div>

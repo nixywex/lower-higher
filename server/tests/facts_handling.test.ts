@@ -4,10 +4,10 @@ import type { Fact } from '../types';
 const { getRightAnswers } = require('../utils/facts_handling');
 
 describe('getRightAnswers', () => {
-  test('returns facts sorted by answer ascending', async () => {
+  test('returns facts sorted by answer descending (MAX to MIN)', async () => {
     const result: Fact[] = await getRightAnswers([1, 2, 3]);
     const answers = result.map((f) => f.answer);
-    expect(answers).toEqual([...answers].sort((a, b) => a - b));
+    expect(answers).toEqual([...answers].sort((a, b) => b - a));
   });
 
   test('filters to only the requested ids', async () => {
