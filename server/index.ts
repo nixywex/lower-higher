@@ -25,5 +25,5 @@ app.use('/api/facts', factsRouter);
 registerGameSocket(io);
 
 httpServer.listen(port, () => {
-  console.log(`"Lower-Higher" backend listening on port ${port}`);
+  console.log(`server up on port ${port}, cors from ${corsOrigin}`);
 });

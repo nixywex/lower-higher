@@ -2,72 +2,72 @@
   "facts": [
     {
       "id": 1,
-      "question": "Wie viele Tage dauerte der längste dokumentierte Schluckauf-Anfall eines Menschen?",
+      "question": "Wie viele Tage dauerte der längste Schluckauf-Anfall eines Menschen?",
       "answer": 24800
     },
     {
       "id": 2,
-      "question": "Wie viele Sekunden dauert der längste aufgezeichnete Flug eines Huhns?",
+      "question": "Wie lang war der längste Flug eines Huhns in Sekunden?",
       "answer": 13
     },
     {
       "id": 3,
-      "question": "Wie viele Jahre dauert es im Durchschnitt, bis ein Tropfen Wasser den gesamten globalen Ozeankreislauf einmal durchlaufen hat?",
+      "question": "Wie viele Jahre braucht ein Wassertropfen für den globalen Ozeankreislauf?",
       "answer": 1000
     },
     {
       "id": 4,
-      "question": "Wie viele Jahre braucht der Zwergplanet Pluto für eine einzige Umkreisung der Sonne?",
+      "question": "Wie viele Jahre braucht Pluto für eine Umkreisung der Sonne?",
       "answer": 248
     },
     {
       "id": 5,
-      "question": "Wie viele Stunden dauert es, um das längste Wort der Welt laut vorzulesen?",
+      "question": "Wie viele Stunden dauert es, das längste Wort der Welt vorzulesen?",
       "answer": 126000
     },
     {
       "id": 6,
-      "question": "Wie viele Sekunden dauert der längste offiziell gemessene menschliche Rülpser?",
+      "question": "Wie lang war der längste gemessene menschliche Rülpser in Sekunden?",
       "answer": 18
     },
     {
       "id": 7,
-      "question": "Wie viele Tage deines Lebens sind deine Augen insgesamt geschlossen, nur weil du blinzelst?",
+      "question": "Wie viele Tage verbringt man im Leben mit Blinzeln?",
       "answer": 1825
     },
     {
       "id": 8,
-      "question": "Wie viele Jahre braucht ein Lego-Stein, um sich im Ozean vollständig zu zersetzen?",
+      "question": "Wie viele Jahre braucht ein Lego-Stein, um im Ozean zu zersetzen?",
       "answer": 1300
     },
     {
       "id": 9,
-      "question": "Wie viele Stunden hat der Mensch verbracht, der den Weltrekord im Dauer-Videospielen hält?",
+      "question": "Wie viele Stunden dauerte der Weltrekord im Dauer-Videospielen?",
       "answer": 135
     },
     {
       "id": 10,
-      "question": "Wie viele Zähne hat eine Weinbergschnecke auf ihrer Zunge?",
+      "question": "Wie viele Zähne hat eine Weinbergschnecke?",
       "answer": 25000
     },
     {
       "id": 11,
-      "question": "Wie viele Prozent der DNA einer Banane stimmt mit der DNA einer menschlichen Zelle überein?",
+      "question": "Wie viel Prozent der menschlichen DNA teilt eine Banane?",
       "answer": 50
     },
     {
       "id": 12,
-      "question": "Wie viele Dominosteine fielen beim aktuellen Weltrekord im Domino-Day um?",
+      "question": "Wie viele Dominosteine fielen beim Domino-Day-Weltrekord um?",
       "answer": 4491863
     },
     {
       "id": 13,
-      "question": "Wie viele Hotdogs essen die US-Amerikaner schätzungsweise an einem einzigen Nationalfeiertag?",
+      "question": "Wie viele Hotdogs essen Amerikaner an einem einzigen Nationalfeiertag?",
       "answer": 150000000
     },
     {
       "id": 14,
-      "question": "Wie viele Oscars wurden seit der allerersten Verleihung 1929 bis heute vergeben?",
+      "question": "Wie viele Oscars wurden seit 1929 insgesamt vergeben?",
       "answer": 3140
     },
     {
@@ -77,32 +77,32 @@
     },
     {
       "id": 16,
-      "question": "Wie viele Punkte erreicht man bei einem Pac-Man-Spiel maximal, bevor der Kill-Screen kommt?",
+      "question": "Wie viele Punkte sind bei Pac-Man maximal möglich?",
       "answer": 3333360
     },
     {
       "id": 17,
-      "question": "Wie viele bunte Ballons heben das Haus im Pixar-Film \"Up\" an?",
+      "question": "Wie viele Ballons heben das Haus im Film \"Up\" an?",
       "answer": 20622
     },
     {
       "id": 18,
-      "question": "Wie viele verschiedene Möglichkeiten gibt es mathematisch, eine klassische Krawatte zu binden?",
+      "question": "Auf wie viele Arten kann man eine Krawatte binden?",
       "answer": 177147
     },
     {
       "id": 19,
-      "question": "Wie viele Stunden Videomaterial werden jede einzelne Minute auf YouTube hochgeladen?",
+      "question": "Wie viele Stunden Videomaterial werden pro Minute auf YouTube hochgeladen?",
       "answer": 30000
     },
     {
       "id": 20,
-      "question": "Wie viele einzelne Lego-Steine werden an einem Tag weltweit produziert?",
+      "question": "Wie viele Lego-Steine werden täglich weltweit produziert?",
       "answer": 98630136
     },
     {
       "id": 21,
-      "question": "Wie oft wird das Wort \"Baby\" im englischen Kinderlied \"Baby Shark\" gesungen?",
+      "question": "Wie oft wird \"Baby\" in \"Baby Shark\" gesungen?",
       "answer": 162
     },
     {
@@ -117,22 +117,22 @@
     },
     {
       "id": 24,
-      "question": "Wie viele Liter Bier werden beim Oktoberfest jährlich getrunken?",
+      "question": "Wie viele Liter Bier werden beim Oktoberfest getrunken?",
       "answer": 7000000
     },
     {
       "id": 25,
-      "question": "Wie viele Mal wurde die Mona Lisa in ihrer Geschichte gestohlen?",
+      "question": "Wie oft wurde die Mona Lisa gestohlen?",
       "answer": 1
     },
     {
       "id": 26,
-      "question": "Wie viele Gramm wiegt ein offizieller Golfball?",
+      "question": "Wie viele Gramm wiegt ein Golfball?",
       "answer": 46
     },
     {
       "id": 27,
-      "question": "Wie viele Monde hat Jupiter aktuell?",
+      "question": "Wie viele Monde hat Jupiter?",
       "answer": 95
     },
     {
@@ -142,12 +142,12 @@
     },
     {
       "id": 29,
-      "question": "Wie viele Liter Speichel produziert ein Mensch in einem Jahr?",
+      "question": "Wie viele Liter Speichel produziert ein Mensch pro Jahr?",
       "answer": 730
     },
     {
       "id": 30,
-      "question": "Wie viele Tage trägt eine Elefantin ihr Baby?",
+      "question": "Wie viele Tage ist eine Elefantin schwanger?",
       "answer": 660
     },
     {
@@ -162,33 +162,37 @@
     },
     {
       "id": 33,
-      "question": "Wie viele Wörter umfasst die gesamte Harry-Potter-Reihe?",
+      "question": "Wie viele Wörter hat die Harry-Potter-Reihe insgesamt?",
       "answer": 1084170
     },
     {
       "id": 34,
-      "question": "Wie viele Tage hat ein Monopoly-Weltrekordspiel gedauert?",
+      "question": "Wie viele Tage dauerte das längste Monopoly-Spiel?",
       "answer": 70
     },
-    { "id": 35, "question": "Wie viele Knochen hat ein Hai?", "answer": 0 },
+    {
+      "id": 35,
+      "question": "Wie viele Knochen hat ein Hai?",
+      "answer": 0
+    },
     {
       "id": 36,
-      "question": "Wie viele Regenwürmer leben in einem Quadratmeter gesunden Ackerbodens?",
+      "question": "Wie viele Regenwürmer leben in einem Quadratmeter Ackerboden?",
       "answer": 400
     },
     {
       "id": 37,
-      "question": "Wie viele Milliarden Hühner leben aktuell auf der Erde?",
+      "question": "Wie viele Milliarden Hühner gibt es auf der Erde?",
       "answer": 33
     },
     {
       "id": 38,
-      "question": "Wie viele Schweißdrüsen hat der Mensch?",
+      "question": "Wie viele Schweißdrüsen hat ein Mensch?",
       "answer": 3000000
     },
     {
       "id": 39,
-      "question": "Wie viele Kilogramm Essen frisst ein Elefant täglich?",
+      "question": "Wie viele Kilogramm frisst ein Elefant täglich?",
       "answer": 200
     },
     {
@@ -198,33 +202,303 @@
     },
     {
       "id": 41,
-      "question": "Wie viele Wörter umfasst das Oxford English Dictionary?",
+      "question": "Wie viele Wörter hat das Oxford English Dictionary?",
       "answer": 170000
     },
     {
       "id": 42,
-      "question": "Wie viele Zentimeter hoch war die größte je gemessene Sonnenblume?",
+      "question": "Wie viele Zentimeter hoch war die größte Sonnenblume der Welt?",
       "answer": 940
     },
     {
       "id": 43,
-      "question": "Wie viele Staffeln hat The Simpsons aktuell?",
+      "question": "Wie viele Staffeln hat The Simpsons?",
       "answer": 36
     },
     {
       "id": 44,
-      "question": "Wie viele Millionen Kopien hat GTA V weltweit verkauft?",
+      "question": "Wie viele Millionen Kopien hat GTA V verkauft?",
       "answer": 190
     },
     {
       "id": 45,
-      "question": "Wie viele Episoden hat SpongeBob Schwammkopf insgesamt?",
+      "question": "Wie viele Episoden hat SpongeBob?",
       "answer": 330
     },
     {
       "id": 46,
-      "question": "Wie viele Mal fällt das F-Wort in Pulp Fiction?",
+      "question": "Wie oft fällt das F-Wort in Pulp Fiction?",
       "answer": 265
+    },
+    {
+      "id": 47,
+      "question": "Wie viele Rollen Toilettenpapier verbraucht ein Deutscher pro Jahr?",
+      "answer": 46
+    },
+    {
+      "id": 48,
+      "question": "Wie viele Kilogramm wiegt die Zunge eines Blauwals?",
+      "answer": 2700
+    },
+    {
+      "id": 49,
+      "question": "Wie viele Stunden saß der Weltrekordhalter am Stück auf einer Toilette?",
+      "answer": 116
+    },
+    {
+      "id": 50,
+      "question": "Wie viele Wörter spricht Schwarzenegger im ersten Terminator-Film?",
+      "answer": 74
+    },
+    {
+      "id": 51,
+      "question": "Wie viel Spielgeld (in Dollar) steckt in einer Monopoly-Box?",
+      "answer": 20580
+    },
+    {
+      "id": 52,
+      "question": "Wie viele Blöcke ist die Weltgrenze in Minecraft vom Zentrum entfernt?",
+      "answer": 30000000
+    },
+    {
+      "id": 53,
+      "question": "Wie viele Köttbullar verkauft IKEA pro Jahr?",
+      "answer": 1000000000
+    },
+    {
+      "id": 54,
+      "question": "Wie viele Episoden hat \"Friends\"?",
+      "answer": 236
+    },
+    {
+      "id": 55,
+      "question": "Wie viele Millionen Stunden wurde Squid Game Staffel 1 in den ersten 28 Tagen auf Netflix geschaut?",
+      "answer": 1650
+    },
+    {
+      "id": 56,
+      "question": "Wie viele Burger verkauft McDonald's pro Sekunde?",
+      "answer": 75
+    },
+    {
+      "id": 57,
+      "question": "Wie lang ist das erste YouTube-Video \"Me at the zoo\" in Sekunden?",
+      "answer": 19
+    },
+    {
+      "id": 58,
+      "question": "Wie viele verschiedene Tetrominos gibt es in Tetris?",
+      "answer": 7
+    },
+    {
+      "id": 59,
+      "question": "Wie viele Gummibärchen sind in einer 200g-Tüte Haribo Goldbären?",
+      "answer": 87
+    },
+    {
+      "id": 60,
+      "question": "Wie viele Tasten hat eine deutsche PC-Tastatur?",
+      "answer": 105
+    },
+    {
+      "id": 61,
+      "question": "Wie viele Augen hat Mike Glotzkowski aus \"Die Monster AG\"?",
+      "answer": 1
+    },
+    {
+      "id": 62,
+      "question": "Wie viele offizielle Formen haben McDonald's Chicken McNuggets?",
+      "answer": 4
+    },
+    {
+      "id": 63,
+      "question": "Wie viele Minuten dauert der längste je veröffentlichte Film?",
+      "answer": 51420
+    },
+    {
+      "id": 64,
+      "question": "Wie viele Kalorien hat der Kleber einer Briefmarke?",
+      "answer": 2
+    },
+    {
+      "id": 65,
+      "question": "Wie viele US-Präsidenten waren Einzelkinder?",
+      "answer": 0
+    },
+    {
+      "id": 66,
+      "question": "Wie viele Nudelformen gibt es weltweit?",
+      "answer": 600
+    },
+    {
+      "id": 67,
+      "question": "Wie viele Kalorien hat ein Kilogramm Nutella?",
+      "answer": 5390
+    },
+    {
+      "id": 68,
+      "question": "Wie viele Gummibärchen produziert Haribo täglich?",
+      "answer": 100000000
+    },
+    {
+      "id": 69,
+      "question": "Wie viele Stunden dauerte das längste Monopoly-Spiel unter Wasser?",
+      "answer": 1200
+    },
+    {
+      "id": 70,
+      "question": "Wie viele Schritte macht ein Mensch im Laufe seines Lebens?",
+      "answer": 150000000
+    },
+    {
+      "id": 71,
+      "question": "Wie viele V-Bucks kostet der Battle-Pass in Fortnite?",
+      "answer": 950
+    },
+    {
+      "id": 72,
+      "question": "Wie viele Episoden erschienen von Skibidi Toilet im Jahr 2023?",
+      "answer": 70
+    },
+    {
+      "id": 73,
+      "question": "Wie viele Robux bekommt man für ~100 Dollar?",
+      "answer": 8000
+    },
+    {
+      "id": 74,
+      "question": "Wie viele Aufrufe hat das Rickroll-Video auf YouTube?",
+      "answer": 1500000000
+    },
+    {
+      "id": 75,
+      "question": "Wie viele Emotes gibt es in Fortnite?",
+      "answer": 800
+    },
+    {
+      "id": 76,
+      "question": "Wie viele Diamanten braucht man für eine komplette Rüstung in Minecraft?",
+      "answer": 24
+    },
+    {
+      "id": 77,
+      "question": "Wie viele Aura-Punkte verliert man laut TikTok, wenn man stolpert?",
+      "answer": 10000
+    },
+    {
+      "id": 78,
+      "question": "Wie viele Jahre Gefängnis bekam Quandale Dingle in seiner Meme-Hintergrundgeschichte?",
+      "answer": 69
+    },
+    {
+      "id": 79,
+      "question": "Wie viele Herzen Schaden macht ein Creeper auf \"Schwer\" ohne Rüstung?",
+      "answer": 32
+    },
+    {
+      "id": 80,
+      "question": "Wie viele Wörter sagt das Chicken Nugget im \"Gedagedigedagedao\"-Video richtig?",
+      "answer": 0
+    },
+    {
+      "id": 81,
+      "question": "Wie viele Dollar gewann der Sieger beim MrBeast Squid Game?",
+      "answer": 456000
+    },
+    {
+      "id": 82,
+      "question": "Wie viele Minuten hat ein 30-Tage-Subathon?",
+      "answer": 43200
+    },
+    {
+      "id": 83,
+      "question": "Wie viele Blöcke passen in ein Minecraft-Inventar voller Shulker-Boxen?",
+      "answer": 62208
+    },
+    {
+      "id": 84,
+      "question": "Wie viele GTA-Dollar bringt die Megalodon-Cashcard in GTA Online?",
+      "answer": 10000000
+    },
+    {
+      "id": 85,
+      "question": "Wie viele Robux kostet das \"Violet Valkyrie\"-Item im Roblox-Shop?",
+      "answer": 50000
+    },
+    {
+      "id": 86,
+      "question": "Wie viele Mitglieder kann ein Discord-Server maximal haben?",
+      "answer": 500000
+    },
+    {
+      "id": 87,
+      "question": "Wie viele XP braucht man für Level 100 im Fortnite Battle Pass?",
+      "answer": 7500000
+    },
+    {
+      "id": 88,
+      "question": "Wie viele Euro ist das wertvollste CS2-Messer (Karambit Blue Gem) wert?",
+      "answer": 1500000
+    },
+    {
+      "id": 89,
+      "question": "Wie viele Bitcoins zahlte ein Programmierer 2010 für zwei Pizzen?",
+      "answer": 10000
+    },
+    {
+      "id": 90,
+      "question": "Wie viele Aufrufe hatte der GTA VI-Trailer nach 24 Stunden?",
+      "answer": 93000000
+    },
+    {
+      "id": 91,
+      "question": "Wie viele Follower hat der offizielle TikTok-Kanal von TikTok?",
+      "answer": 63000000
+    },
+    {
+      "id": 92,
+      "question": "Wie viele Robux kostet das \"Goldene Roblox-Visier\" im Katalog?",
+      "answer": 50000
+    },
+    {
+      "id": 93,
+      "question": "Wie viele Likes hat das Hühnerei-Foto auf Instagram?",
+      "answer": 60000000
+    },
+    {
+      "id": 94,
+      "question": "Wie viele Minuten TikTok schaust du, wenn du täglich 2 Stunden scrollst – ein Jahr lang?",
+      "answer": 43800
+    },
+    {
+      "id": 95,
+      "question": "Wie viele Aufrufe hat das erste YouTube-Video \"Me at the zoo\"?",
+      "answer": 340000000
+    },
+    {
+      "id": 96,
+      "question": "Wie viele Dollar Schadenersatz forderte ein Mann, weil Siri seinen Namen falsch aussprach?",
+      "answer": 1000000
+    },
+    {
+      "id": 97,
+      "question": "Wie viele XP braucht man in Minecraft für Level 30?",
+      "answer": 1395
+    },
+    {
+      "id": 98,
+      "question": "Wie hoch ist die Baugrenze in Minecraft in Blöcken?",
+      "answer": 384
+    },
+    {
+      "id": 99,
+      "question": "Wie viele Stunden dauert One Piece am Stück geschaut?",
+      "answer": 400
+    },
+    {
+      "id": 100,
+      "question": "Wie viele Dollar kostet der teuerste Skin in PUBG Mobile?",
+      "answer": 5000
     }
   ]
 }
