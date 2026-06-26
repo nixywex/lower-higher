@@ -26,6 +26,18 @@ describe('POST /facts/submit', () => {
     expect(res.status).toBe(400);
   });
 
+  test('returns 400 if ids is empty', async () => {
+    const res = await request(app).post('/facts/submit').send({ ids: [] });
+    expect(res.status).toBe(400);
+  });
+
+  test('returns 400 if ids contain non-existent fact ids', async () => {
+    const res = await request(app)
+      .post('/facts/submit')
+      .send({ ids: [99999] });
+    expect(res.status).toBe(400);
+  });
+
   test('returns score and rightAnswers for valid ids', async () => {
     const res = await request(app)
       .post('/facts/submit')
