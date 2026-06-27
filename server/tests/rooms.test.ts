@@ -23,6 +23,13 @@ describe('createRoom', () => {
     expect(room.state).toBe('waiting');
     expect(room.factIds).toEqual([1, 2]);
     expect(room.clientFacts).toEqual(facts);
+    expect(room.hardcore).toBe(false);
+    removeRoom(room.code);
+  });
+
+  test('stores hardcore flag', () => {
+    const room: Room = createRoom('host-1', facts, true);
+    expect(room.hardcore).toBe(true);
     removeRoom(room.code);
   });
 

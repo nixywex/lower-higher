@@ -1,8 +1,16 @@
+import { useState } from 'react';
 import './StartPage.css';
 import { useNavigate } from 'react-router-dom';
 
 function StartPage() {
   const navigate = useNavigate();
+  const [hardcore, setHardcore] = useState(() => localStorage.getItem('hardcoreMode') === 'true');
+
+  const toggleHardcore = () => {
+    const next = !hardcore;
+    setHardcore(next);
+    localStorage.setItem('hardcoreMode', String(next));
+  };
 
   return (
     <div className="container">
@@ -22,6 +30,22 @@ function StartPage() {
         </div>
         <h2>Willkommen beim Higher-Lower-Spiel!</h2>
         <p className="subtitle">Stelle dein Gespür auf die Probe und erziele die längste Serie.</p>
+        <div className="divider" />
+        <div className="hardcore-row">
+          <div className="hardcore-labels">
+            <span className="hardcore-name">Hardcore Mode</span>
+            <span className="hardcore-hint">
+              Kein Umplatzieren, 60 Sekunden — leere Slots werden zufällig gefüllt.
+            </span>
+          </div>
+          <button
+            className={`toggle-btn ${hardcore ? 'active' : ''}`}
+            onClick={toggleHardcore}
+            aria-pressed={hardcore}
+          >
+            <span className="toggle-thumb" />
+          </button>
+        </div>
         <div className="divider" />
         <button className="start-button" onClick={() => navigate('/game')}>
           <span className="btn-icon">👤</span>

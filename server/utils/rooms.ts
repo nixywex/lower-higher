@@ -13,7 +13,11 @@ function generateRoomCode(): string {
   return code;
 }
 
-export function createRoom(hostSocketId: string, clientFacts: FactForClient[]): Room {
+export function createRoom(
+  hostSocketId: string,
+  clientFacts: FactForClient[],
+  hardcore = false
+): Room {
   let code = generateRoomCode();
   while (rooms.has(code)) {
     code = generateRoomCode();
@@ -29,6 +33,7 @@ export function createRoom(hostSocketId: string, clientFacts: FactForClient[]): 
       [hostSocketId]: { socketId: hostSocketId },
     },
     state: 'waiting',
+    hardcore,
   };
 
   rooms.set(code, room);

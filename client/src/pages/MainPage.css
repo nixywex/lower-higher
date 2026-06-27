@@ -531,6 +531,40 @@
   }
 }
 
+.game-timer {
+  font-size: 64px;
+  font-weight: 700;
+  color: white;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 1px;
+  transition: color 0.4s;
+}
+
+.game-timer.warning {
+  color: #fb923c;
+}
+
+.game-timer.danger {
+  color: #f87171;
+  animation: timerPulse 0.6s ease-in-out infinite;
+}
+
+@keyframes timerPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.answer-chip.locked {
+  cursor: default;
+  opacity: 0.85;
+}
+
 .keyboard-hint {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.3);

@@ -1,4 +1,4 @@
-import { useEffect, useState, Fragment } from 'react';
+import { useEffect, useState, useRef, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../config';
 import './MainPage.css';
@@ -27,6 +27,11 @@ function MainPage() {
   const [waveActive, setWaveActive] = useState(false);
   const [keyboardSelected, setKeyboardSelected] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
+  const [hardcore] = useState(() => localStorage.getItem('hardcoreMode') === 'true');
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const autoSubmitted = useRef(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   useEffect(() => {
     fetch(`${API_URL}/api/facts/round`)
       .then((res) => res.json())
@@ -61,7 +66,7 @@ function MainPage() {
         setPulsedSlot(slotIndex);
         setTimeout(() => setPulsedSlot(null), 400);
         setCurrentIndex((i) => i + 1);
-      } else {
+      } else if (!hardcore) {
         const displaced = updated[slotIndex];
         updated[slotIndex] = dragItem;
         setSortedAnswers(updated);
@@ -71,7 +76,7 @@ function MainPage() {
         setPulsedSlot(slotIndex);
         setTimeout(() => setPulsedSlot(null), 400);
       }
-    } else if (typeof dragSource === 'number') {
+    } else if (typeof dragSource === 'number' && !hardcore) {
       const fromSlot = dragSource;
       const occupant = updated[slotIndex];
       updated[slotIndex] = dragItem;
@@ -84,6 +89,11 @@ function MainPage() {
   };
 
   const handleSubmit = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    setTimeLeft(null);
     const ids = sortedAnswers.filter(Boolean).map((f) => f!.id);
     fetch(`${API_URL}/api/facts/submit`, {
       method: 'POST',
@@ -116,6 +126,58 @@ function MainPage() {
   };
 
   useEffect(() => {
+    if (!hardcore || facts.length === 0 || loading) return;
+    autoSubmitted.current = false;
+    if (timerRef.current) clearInterval(timerRef.current);
+    const DURATION = 60;
+    const startTime = Date.now();
+    const tick = () => {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const remaining = Math.max(0, DURATION - elapsed);
+      setTimeLeft(remaining);
+      if (remaining <= 0) {
+        clearInterval(timerRef.current!);
+        timerRef.current = null;
+      }
+    };
+    const initialId = setTimeout(tick, 0);
+    timerRef.current = setInterval(tick, 250);
+    return () => {
+      clearTimeout(initialId);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [facts]);
+
+  useEffect(() => {
+    if (timeLeft !== 0 || autoSubmitted.current) return;
+    autoSubmitted.current = true;
+    const remaining = facts.slice(currentIndex).sort(() => Math.random() - 0.5);
+    const updated = [...sortedAnswers];
+    let ri = 0;
+    for (let i = 0; i < updated.length; i++) {
+      if (!updated[i] && remaining[ri]) updated[i] = remaining[ri++];
+    }
+    setSortedAnswers(updated);
+    const ids = updated.filter(Boolean).map((f) => f!.id);
+    fetch(`${API_URL}/api/facts/submit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setScore(data.score);
+        setRightAnswers(data.rightAnswers);
+        setShowPopup(true);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeLeft]);
+
+  useEffect(() => {
     if (allAnswered && facts.length > 0) {
       const timer = setTimeout(() => setWaveActive(true), 0);
       setTimeout(() => setWaveActive(false), facts.length * 100 + 400);
@@ -143,7 +205,7 @@ function MainPage() {
           handleDropOnSlot(num - 1);
           setKeyboardSelected(false);
           setSelectedSlot(null);
-        } else if (sortedAnswers[num - 1]) {
+        } else if (sortedAnswers[num - 1] && !hardcore) {
           setDragItem(sortedAnswers[num - 1]);
           setDragSource(num - 1);
           setKeyboardSelected(true);
@@ -151,7 +213,7 @@ function MainPage() {
         }
       }
 
-      if (e.key === 'Delete' || e.key === 'Backspace') {
+      if ((e.key === 'Delete' || e.key === 'Backspace') && !hardcore) {
         const firstFilled = sortedAnswers.findIndex((s) => s !== null);
         if (firstFilled !== -1) {
           const updated = [...sortedAnswers];
@@ -318,9 +380,9 @@ function MainPage() {
                 >
                   {slot ? (
                     <div
-                      className="answer-chip placed"
-                      draggable
-                      onDragStart={() => handleDragStartFromSlot(slot, i)}
+                      className={`answer-chip placed${hardcore ? ' locked' : ''}`}
+                      draggable={!hardcore}
+                      onDragStart={!hardcore ? () => handleDragStartFromSlot(slot, i) : undefined}
                     >
                       {slot.question}
                     </div>
@@ -342,6 +404,13 @@ function MainPage() {
             Space = Karte nehmen &nbsp;|&nbsp; 1-{facts.length} = Position wählen &nbsp;|&nbsp;
             Delete = entfernen
           </p>
+          {hardcore && timeLeft !== null && (
+            <div
+              className={`game-timer${timeLeft <= 10 ? ' danger' : timeLeft <= 20 ? ' warning' : ''}`}
+            >
+              {timeLeft}
+            </div>
+          )}
         </div>
       </div>
     </div>
