@@ -7,14 +7,14 @@
   },
   "lint-staged": {
     "client/**/*.{ts,tsx}": [
-      "bunx eslint --fix",
-      "bunx prettier --write"
+      "./client/node_modules/.bin/eslint --fix --config ./client/eslint.config.js",
+      "prettier --write"
     ],
     "server/**/*.{ts,js}": [
-      "bunx prettier --write"
+      "prettier --write"
     ],
     "*.{json,md}": [
-      "bunx prettier --write"
+      "prettier --write"
     ]
   },
   "dependencies": {

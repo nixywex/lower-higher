@@ -26,4 +26,5 @@ export interface Room {
   clientFacts: FactForClient[];
   players: Record<string, Player>;
   state: 'waiting' | 'playing' | 'finished';
+  hardcore: boolean;
 }

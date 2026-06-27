@@ -15,10 +15,10 @@ export function registerGameSocket(io: Server): void {
   io.on('connection', (socket: Socket) => {
     console.log(`socket ${socket.id} connected`);
 
-    socket.on('createRoom', async () => {
+    socket.on('createRoom', async (data?: { hardcore?: boolean }) => {
       try {
         const clientFacts = await getClientFacts(NUMBER_OF_FACTS);
-        const room = createRoom(socket.id, clientFacts);
+        const room = createRoom(socket.id, clientFacts, data?.hardcore ?? false);
 
         socket.join(room.code);
         socket.emit('roomCode', { code: room.code });
@@ -39,7 +39,7 @@ export function registerGameSocket(io: Server): void {
       }
 
       socket.join(room.code);
-      io.to(room.code).emit('roomReady', { facts: room.clientFacts });
+      io.to(room.code).emit('roomReady', { facts: room.clientFacts, hardcore: room.hardcore });
       console.log(`${socket.id} joined room ${room.code} — game starting`);
     });
 

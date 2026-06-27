@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { API_URL } from '../config';
+import { useToast } from '../hooks/useToast';
+import { ToastContainer } from '../components/ToastContainer';
 import './MultiplayerPage.css';
 
 interface Fact {
@@ -19,7 +21,7 @@ function MultiplayerPage() {
   const [screen, setScreen] = useState<Screen>('lobby');
   const [joinInput, setJoinInput] = useState('');
   const [roomCode, setRoomCode] = useState('');
-  const [error, setError] = useState('');
+  const { toasts, addToast, removeToast } = useToast();
   const [facts, setFacts] = useState<Fact[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [sortedAnswers, setSortedAnswers] = useState<(Fact | null)[]>([]);
@@ -39,6 +41,10 @@ function MultiplayerPage() {
   const [keyboardSelected, setKeyboardSelected] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
+  const [hardcore, setHardcore] = useState(false);
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const autoSubmitted = useRef(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     socket = io(API_URL);
@@ -48,9 +54,10 @@ function MultiplayerPage() {
       setScreen('waiting');
     });
 
-    socket.on('roomReady', ({ facts }: { facts: Fact[] }) => {
+    socket.on('roomReady', ({ facts, hardcore }: { facts: Fact[]; hardcore: boolean }) => {
       setFacts(facts);
       setSortedAnswers(new Array(facts.length).fill(null));
+      setHardcore(hardcore);
       setScreen('game');
     });
 
@@ -66,24 +73,42 @@ function MultiplayerPage() {
       setScreen('result');
     });
 
-    socket.on('playerDisconnected', () => setDisconnected(true));
+    socket.on('playerDisconnected', () => {
+      setDisconnected(true);
+      addToast('Gegner hat die Verbindung getrennt.');
+    });
 
-    socket.on('error', ({ message }: { message: string }) => setError(message));
+    socket.on('gameError', ({ message }: { message: string }) => addToast(message));
+
+    socket.on('connect_error', () => {
+      addToast('Server nicht erreichbar. Überprüfe deine Verbindung.');
+    });
 
     return () => {
       socket?.disconnect();
       socket = null;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCreateRoom = () => {
-    setError('');
-    socket?.emit('createRoom');
+    if (!socket?.connected) {
+      addToast('Keine Verbindung zum Server. Bitte warte oder lade die Seite neu.');
+      return;
+    }
+    socket.emit('createRoom', { hardcore: localStorage.getItem('hardcoreMode') === 'true' });
   };
 
   const handleJoinRoom = () => {
-    setError('');
-    socket?.emit('joinRoom', { code: joinInput.toUpperCase() });
+    if (!joinInput.trim()) {
+      addToast('Bitte einen Raumcode eingeben.');
+      return;
+    }
+    if (!socket?.connected) {
+      addToast('Keine Verbindung zum Server. Bitte warte oder lade die Seite neu.');
+      return;
+    }
+    socket.emit('joinRoom', { code: joinInput.toUpperCase() });
   };
 
   const handleDragStartFromStack = () => {
@@ -107,8 +132,17 @@ function MultiplayerPage() {
         setPulsedSlot(slotIndex);
         setTimeout(() => setPulsedSlot(null), 400);
         setCurrentIndex((i) => i + 1);
+      } else if (!hardcore) {
+        const displaced = updated[slotIndex];
+        updated[slotIndex] = dragItem;
+        setSortedAnswers(updated);
+        const newFacts = [...facts];
+        newFacts[currentIndex] = displaced!;
+        setFacts(newFacts);
+        setPulsedSlot(slotIndex);
+        setTimeout(() => setPulsedSlot(null), 400);
       }
-    } else if (typeof dragSource === 'number') {
+    } else if (typeof dragSource === 'number' && !hardcore) {
       const occupant = updated[slotIndex];
       updated[slotIndex] = dragItem;
       updated[dragSource] = occupant ?? null;
@@ -121,10 +155,58 @@ function MultiplayerPage() {
   const allAnswered = sortedAnswers.length > 0 && sortedAnswers.every((s) => s !== null);
 
   const handleSubmit = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    setTimeLeft(null);
     const ids = sortedAnswers.filter(Boolean).map((f) => f!.id);
     socket?.emit('submitOrder', { ids });
     setSubmitted(true);
   };
+
+  useEffect(() => {
+    if (!hardcore || screen !== 'game') return;
+    autoSubmitted.current = false;
+    if (timerRef.current) clearInterval(timerRef.current);
+    const DURATION = 60;
+    const startTime = Date.now();
+    const tick = () => {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const remaining = Math.max(0, DURATION - elapsed);
+      setTimeLeft(remaining);
+      if (remaining <= 0) {
+        clearInterval(timerRef.current!);
+        timerRef.current = null;
+      }
+    };
+    const initialId = setTimeout(tick, 0);
+    timerRef.current = setInterval(tick, 250);
+    return () => {
+      clearTimeout(initialId);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screen]);
+
+  useEffect(() => {
+    if (timeLeft !== 0 || autoSubmitted.current || submitted) return;
+    autoSubmitted.current = true;
+    const remaining = facts.slice(currentIndex).sort(() => Math.random() - 0.5);
+    const updated = [...sortedAnswers];
+    let ri = 0;
+    for (let i = 0; i < updated.length; i++) {
+      if (!updated[i] && remaining[ri]) updated[i] = remaining[ri++];
+    }
+    setSortedAnswers(updated);
+    const ids = updated.filter(Boolean).map((f) => f!.id);
+    socket?.emit('submitOrder', { ids });
+    setSubmitted(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeLeft]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -146,7 +228,7 @@ function MultiplayerPage() {
           handleDropOnSlot(num - 1);
           setKeyboardSelected(false);
           setSelectedSlot(null);
-        } else if (sortedAnswers[num - 1]) {
+        } else if (sortedAnswers[num - 1] && !hardcore) {
           setDragItem(sortedAnswers[num - 1]);
           setDragSource(num - 1);
           setKeyboardSelected(true);
@@ -154,7 +236,7 @@ function MultiplayerPage() {
         }
       }
 
-      if (e.key === 'Delete' || e.key === 'Backspace') {
+      if ((e.key === 'Delete' || e.key === 'Backspace') && !hardcore) {
         const firstFilled = sortedAnswers.findIndex((s) => s !== null);
         if (firstFilled !== -1) {
           const updated = [...sortedAnswers];
@@ -168,12 +250,13 @@ function MultiplayerPage() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dragItem, sortedAnswers, facts.length, currentIndex]);
+  }, [dragItem, sortedAnswers, facts, currentIndex]);
 
   // --- LOBBY ---
   if (screen === 'lobby')
     return (
       <div className="mp-wrapper">
+        <ToastContainer toasts={toasts} onRemove={removeToast} />
         <button className="exit-btn" onClick={() => navigate('/')}>
           ✕
         </button>
@@ -197,7 +280,6 @@ function MultiplayerPage() {
               Join
             </button>
           </div>
-          {error && <p className="mp-error">{error}</p>}
         </div>
       </div>
     );
@@ -206,6 +288,7 @@ function MultiplayerPage() {
   if (screen === 'waiting')
     return (
       <div className="mp-wrapper">
+        <ToastContainer toasts={toasts} onRemove={removeToast} />
         <button className="exit-btn" onClick={() => navigate('/')}>
           ✕
         </button>
@@ -222,6 +305,7 @@ function MultiplayerPage() {
   if (screen === 'result')
     return (
       <div className="mp-wrapper">
+        <ToastContainer toasts={toasts} onRemove={removeToast} />
         <div className="mp-card mp-result-card">
           {disconnected && <p className="mp-error">Gegner hat das Spiel verlassen.</p>}
           {!showResult ? (
@@ -250,53 +334,44 @@ function MultiplayerPage() {
             </>
           ) : (
             <>
-              <div className="result-columns">
-                <div className="result-col">
-                  <h3>Du</h3>
-                  {myAnswers.map((fact, i) => {
-                    const isCorrect = fact?.id === rightAnswers[i]?.id;
-                    return (
+              <div className="result-grid result-grid-3">
+                <div className="result-col-header">Du</div>
+                <div className="result-col-header">Richtig</div>
+                <div className="result-col-header">Gegner</div>
+                {rightAnswers.map((rightFact, i) => {
+                  const myFact = myAnswers[i];
+                  const opFact = opponentAnswers[i];
+                  const myCorrect = myFact?.id === rightFact?.id;
+                  const opCorrect = opFact?.id === rightFact?.id;
+                  return (
+                    <Fragment key={i}>
                       <div
-                        key={fact.id}
-                        className={`result-row ${isCorrect ? 'correct' : 'wrong'}`}
+                        className={`result-row ${myCorrect ? 'correct' : 'wrong'}`}
                         style={{ animationDelay: `${i * 150}ms` }}
                       >
                         <span className="result-rank">{i + 1}.</span>
-                        <span className="result-question">{fact.question}</span>
+                        <span className="result-question">{myFact?.question}</span>
                       </div>
-                    );
-                  })}
-                </div>
-                <div className="result-col middle">
-                  <h3>Richtig</h3>
-                  {rightAnswers.map((fact, i) => (
-                    <div
-                      key={fact.id}
-                      className="result-row correct"
-                      style={{ animationDelay: `${i * 150}ms` }}
-                    >
-                      <span className="result-rank">{i + 1}.</span>
-                      <span className="result-question">{fact.question}</span>
-                      <span className="result-answer">{fact.answer}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="result-col">
-                  <h3>Gegner</h3>
-                  {opponentAnswers.map((fact, i) => {
-                    const isCorrect = fact?.id === rightAnswers[i]?.id;
-                    return (
                       <div
-                        key={fact.id}
-                        className={`result-row ${isCorrect ? 'correct' : 'wrong'}`}
+                        className="result-row correct"
                         style={{ animationDelay: `${i * 150}ms` }}
                       >
                         <span className="result-rank">{i + 1}.</span>
-                        <span className="result-question">{fact.question}</span>
+                        <span className="result-question">{rightFact.question}</span>
+                        <span className="result-answer">
+                          {rightFact.answer?.toLocaleString('de-DE')}
+                        </span>
                       </div>
-                    );
-                  })}
-                </div>
+                      <div
+                        className={`result-row ${opCorrect ? 'correct' : 'wrong'}`}
+                        style={{ animationDelay: `${i * 150}ms` }}
+                      >
+                        <span className="result-rank">{i + 1}.</span>
+                        <span className="result-question">{opFact?.question}</span>
+                      </div>
+                    </Fragment>
+                  );
+                })}
               </div>
               <div className="mp-result-buttons">
                 <button className="mp-btn secondary" onClick={() => navigate('/')}>
@@ -315,15 +390,10 @@ function MultiplayerPage() {
   // --- GAME ---
   return (
     <div className="game-wrapper">
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
       <button className="exit-btn" onClick={() => navigate('/')}>
         ✕
       </button>
-      <div className="progress-bar-wrapper">
-        <div
-          className="progress-bar-fill"
-          style={{ height: `${(currentIndex / facts.length) * 100}%` }}
-        />
-      </div>
       {disconnected && <div className="mp-disconnect-banner">Gegner hat das Spiel verlassen.</div>}
       <div className="question-stack">
         {facts.slice(currentIndex, currentIndex + 3).map((fact, i) => (
@@ -343,34 +413,42 @@ function MultiplayerPage() {
         ))}
       </div>
       <div className="game-area">
+        <div className="progress-bar-wrapper">
+          <div
+            className="progress-bar-fill"
+            style={{ height: `${(currentIndex / facts.length) * 100}%` }}
+          />
+        </div>
         <div className="timeline-area">
           <span className="timeline-label top">MAX</span>
           <div className="timeline-slots">
             {sortedAnswers.map((slot, i) => (
-              <div
-                key={i}
-                className={`timeline-slot ${slot ? 'filled' : ''} ${dragOverSlot === i ? 'drag-over' : ''} ${pulsedSlot === i ? 'pulse' : ''} ${selectedSlot === i ? 'keyboard-selected-slot' : ''}`}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setDragOverSlot(i);
-                }}
-                onDragLeave={() => setDragOverSlot(null)}
-                onDrop={() => {
-                  handleDropOnSlot(i);
-                  setDragOverSlot(null);
-                }}
-              >
-                {slot ? (
-                  <div
-                    className="answer-chip placed"
-                    draggable
-                    onDragStart={() => handleDragStartFromSlot(slot, i)}
-                  >
-                    {slot.question}
-                  </div>
-                ) : (
-                  <span className="slot-placeholder">—</span>
-                )}
+              <div key={i} className="slot-row">
+                <span className="slot-number">{i + 1}</span>
+                <div
+                  className={`timeline-slot ${slot ? 'filled' : ''} ${dragOverSlot === i ? 'drag-over' : ''} ${pulsedSlot === i ? 'pulse' : ''} ${selectedSlot === i ? 'keyboard-selected-slot' : ''}`}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setDragOverSlot(i);
+                  }}
+                  onDragLeave={() => setDragOverSlot(null)}
+                  onDrop={() => {
+                    handleDropOnSlot(i);
+                    setDragOverSlot(null);
+                  }}
+                >
+                  {slot ? (
+                    <div
+                      className={`answer-chip placed${hardcore ? ' locked' : ''}`}
+                      draggable={!hardcore}
+                      onDragStart={!hardcore ? () => handleDragStartFromSlot(slot, i) : undefined}
+                    >
+                      {slot.question}
+                    </div>
+                  ) : (
+                    <span className="slot-placeholder">—</span>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -391,6 +469,13 @@ function MultiplayerPage() {
             Leertaste = Karte nehmen &nbsp;|&nbsp; 1-{facts.length} = Position wählen &nbsp;|&nbsp;
             Entf = entfernen
           </p>
+          {hardcore && timeLeft !== null && !submitted && (
+            <div
+              className={`game-timer${timeLeft <= 10 ? ' danger' : timeLeft <= 20 ? ' warning' : ''}`}
+            >
+              {timeLeft}
+            </div>
+          )}
         </div>
       </div>
     </div>
