@@ -1,6 +1,8 @@
 import { useEffect, useState, useRef, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../config';
+import { useToast } from '../hooks/useToast';
+import { ToastContainer } from '../components/ToastContainer';
 import './MainPage.css';
 
 interface Fact {
@@ -10,10 +12,17 @@ interface Fact {
   unit: string;
 }
 
+function fetchWithTimeout(url: string, options?: RequestInit, ms = 8000): Promise<Response> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), ms);
+  return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(id));
+}
+
 function MainPage() {
   const navigate = useNavigate();
   const [facts, setFacts] = useState<Fact[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [sortedAnswers, setSortedAnswers] = useState<(Fact | null)[]>([]);
   const [dragItem, setDragItem] = useState<Fact | null>(null);
@@ -30,16 +39,35 @@ function MainPage() {
   const [hardcore] = useState(() => localStorage.getItem('hardcoreMode') === 'true');
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const autoSubmitted = useRef(false);
+  const { toasts, addToast, removeToast } = useToast();
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  useEffect(() => {
-    fetch(`${API_URL}/api/facts/round`)
-      .then((res) => res.json())
+  const fetchRound = () =>
+    fetchWithTimeout(`${API_URL}/api/facts/round`)
+      .then((res) => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
       .then((data: Fact[]) => {
         setFacts(data);
         setSortedAnswers(new Array(data.length).fill(null));
         setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+        setLoadFailed(true);
+        addToast('Server nicht erreichbar. Bitte überprüfe deine Verbindung.');
       });
+
+  const loadRound = () => {
+    setLoadFailed(false);
+    setLoading(true);
+    fetchRound();
+  };
+
+  useEffect(() => {
+    fetchRound();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const allAnswered = sortedAnswers.every((slot) => slot !== null);
@@ -100,12 +128,16 @@ function MainPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ids }),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
       .then((data) => {
         setScore(data.score);
         setRightAnswers(data.rightAnswers);
         setShowPopup(true);
-      });
+      })
+      .catch(() => addToast('Ergebnis konnte nicht übermittelt werden. Bitte versuche es erneut.'));
   };
 
   const handleNextGame = () => {
@@ -115,14 +147,7 @@ function MainPage() {
     setRightAnswers([]);
     setCurrentIndex(0);
     setSortedAnswers([]);
-    setLoading(true);
-    fetch(`${API_URL}/api/facts/round`)
-      .then((res) => res.json())
-      .then((data: Fact[]) => {
-        setFacts(data);
-        setSortedAnswers(new Array(data.length).fill(null));
-        setLoading(false);
-      });
+    loadRound();
   };
 
   useEffect(() => {
@@ -168,12 +193,16 @@ function MainPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ids }),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
       .then((data) => {
         setScore(data.score);
         setRightAnswers(data.rightAnswers);
         setShowPopup(true);
-      });
+      })
+      .catch(() => addToast('Ergebnis konnte nicht übermittelt werden. Bitte versuche es erneut.'));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeLeft]);
 
@@ -231,6 +260,7 @@ function MainPage() {
   if (showResult)
     return (
       <div className="game-wrapper">
+        <ToastContainer toasts={toasts} onRemove={removeToast} />
         <div className="result-comparison">
           <div className="result-grid">
             <div className="result-col-header">Dein Ergebnis</div>
@@ -270,10 +300,33 @@ function MainPage() {
       </div>
     );
 
-  if (loading) return <div className="loading">Loading...</div>;
+  if (loading)
+    return (
+      <div className="loading">
+        <ToastContainer toasts={toasts} onRemove={removeToast} />
+        Loading...
+      </div>
+    );
+
+  if (loadFailed)
+    return (
+      <div className="loading">
+        <ToastContainer toasts={toasts} onRemove={removeToast} />
+        <p className="load-error-title">Server nicht erreichbar.</p>
+        <div className="load-error-buttons">
+          <button className="popup-btn secondary" onClick={() => navigate('/')}>
+            Zurück
+          </button>
+          <button className="popup-btn primary" onClick={loadRound}>
+            Erneut versuchen
+          </button>
+        </div>
+      </div>
+    );
 
   return (
     <div className="game-wrapper">
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
       <button className="exit-btn" onClick={() => navigate('/')}>
         ✕
       </button>

@@ -2,6 +2,8 @@ import { useEffect, useState, useRef, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { API_URL } from '../config';
+import { useToast } from '../hooks/useToast';
+import { ToastContainer } from '../components/ToastContainer';
 import './MultiplayerPage.css';
 
 interface Fact {
@@ -19,7 +21,7 @@ function MultiplayerPage() {
   const [screen, setScreen] = useState<Screen>('lobby');
   const [joinInput, setJoinInput] = useState('');
   const [roomCode, setRoomCode] = useState('');
-  const [error, setError] = useState('');
+  const { toasts, addToast, removeToast } = useToast();
   const [facts, setFacts] = useState<Fact[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [sortedAnswers, setSortedAnswers] = useState<(Fact | null)[]>([]);
@@ -71,24 +73,42 @@ function MultiplayerPage() {
       setScreen('result');
     });
 
-    socket.on('playerDisconnected', () => setDisconnected(true));
+    socket.on('playerDisconnected', () => {
+      setDisconnected(true);
+      addToast('Gegner hat die Verbindung getrennt.');
+    });
 
-    socket.on('error', ({ message }: { message: string }) => setError(message));
+    socket.on('gameError', ({ message }: { message: string }) => addToast(message));
+
+    socket.on('connect_error', () => {
+      addToast('Server nicht erreichbar. Überprüfe deine Verbindung.');
+    });
 
     return () => {
       socket?.disconnect();
       socket = null;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCreateRoom = () => {
-    setError('');
-    socket?.emit('createRoom', { hardcore: localStorage.getItem('hardcoreMode') === 'true' });
+    if (!socket?.connected) {
+      addToast('Keine Verbindung zum Server. Bitte warte oder lade die Seite neu.');
+      return;
+    }
+    socket.emit('createRoom', { hardcore: localStorage.getItem('hardcoreMode') === 'true' });
   };
 
   const handleJoinRoom = () => {
-    setError('');
-    socket?.emit('joinRoom', { code: joinInput.toUpperCase() });
+    if (!joinInput.trim()) {
+      addToast('Bitte einen Raumcode eingeben.');
+      return;
+    }
+    if (!socket?.connected) {
+      addToast('Keine Verbindung zum Server. Bitte warte oder lade die Seite neu.');
+      return;
+    }
+    socket.emit('joinRoom', { code: joinInput.toUpperCase() });
   };
 
   const handleDragStartFromStack = () => {
@@ -236,6 +256,7 @@ function MultiplayerPage() {
   if (screen === 'lobby')
     return (
       <div className="mp-wrapper">
+        <ToastContainer toasts={toasts} onRemove={removeToast} />
         <button className="exit-btn" onClick={() => navigate('/')}>
           ✕
         </button>
@@ -259,7 +280,6 @@ function MultiplayerPage() {
               Join
             </button>
           </div>
-          {error && <p className="mp-error">{error}</p>}
         </div>
       </div>
     );
@@ -268,6 +288,7 @@ function MultiplayerPage() {
   if (screen === 'waiting')
     return (
       <div className="mp-wrapper">
+        <ToastContainer toasts={toasts} onRemove={removeToast} />
         <button className="exit-btn" onClick={() => navigate('/')}>
           ✕
         </button>
@@ -284,6 +305,7 @@ function MultiplayerPage() {
   if (screen === 'result')
     return (
       <div className="mp-wrapper">
+        <ToastContainer toasts={toasts} onRemove={removeToast} />
         <div className="mp-card mp-result-card">
           {disconnected && <p className="mp-error">Gegner hat das Spiel verlassen.</p>}
           {!showResult ? (
@@ -368,6 +390,7 @@ function MultiplayerPage() {
   // --- GAME ---
   return (
     <div className="game-wrapper">
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
       <button className="exit-btn" onClick={() => navigate('/')}>
         ✕
       </button>
