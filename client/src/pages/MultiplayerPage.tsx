@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, Fragment } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { API_URL } from '../config';
@@ -306,7 +306,7 @@ function MultiplayerPage() {
     return (
       <div className="mp-wrapper">
         <ToastContainer toasts={toasts} onRemove={removeToast} />
-        <div className="mp-card mp-result-card">
+        <div className={`mp-card mp-result-card${showResult ? ' mp-result-card--detail' : ''}`}>
           {disconnected && <p className="mp-error">Gegner hat das Spiel verlassen.</p>}
           {!showResult ? (
             <>
@@ -334,44 +334,76 @@ function MultiplayerPage() {
             </>
           ) : (
             <>
-              <div className="result-grid result-grid-3">
-                <div className="result-col-header">Du</div>
-                <div className="result-col-header">Richtig</div>
-                <div className="result-col-header">Gegner</div>
-                {rightAnswers.map((rightFact, i) => {
-                  const myFact = myAnswers[i];
-                  const opFact = opponentAnswers[i];
-                  const myCorrect = myFact?.id === rightFact?.id;
-                  const opCorrect = opFact?.id === rightFact?.id;
-                  return (
-                    <Fragment key={i}>
-                      <div
-                        className={`result-row ${myCorrect ? 'correct' : 'wrong'}`}
-                        style={{ animationDelay: `${i * 150}ms` }}
-                      >
-                        <span className="result-rank">{i + 1}.</span>
-                        <span className="result-question">{myFact?.question}</span>
+              <div className="mp-result-detail-wrapper">
+                {/* Desktop: 3-column grid */}
+                <div className="mp-col-result">
+                  <div className="mp-col-header-row">
+                    <div className="mp-col-header">Du</div>
+                    <div className="mp-col-header mp-col-header-center">Richtige Reihenfolge</div>
+                    <div className="mp-col-header">Gegner</div>
+                  </div>
+                  {rightAnswers.map((rightFact, i) => {
+                    const myFact = myAnswers[i];
+                    const opFact = opponentAnswers[i];
+                    const myCorrect = myFact?.id === rightFact?.id;
+                    const opCorrect = opFact?.id === rightFact?.id;
+                    return (
+                      <div key={i} className="mp-col-row">
+                        <div
+                          className={`mp-col-cell mp-col-side ${myCorrect ? 'correct' : 'wrong'}`}
+                        >
+                          {myFact?.question ?? '—'}
+                        </div>
+                        <div className="mp-col-cell mp-col-center">
+                          <span className="mp-col-rank">{i + 1}</span>
+                          <span className="mp-col-q">{rightFact.question}</span>
+                          <span className="mp-col-val">
+                            {rightFact.answer?.toLocaleString('de-DE')}
+                          </span>
+                        </div>
+                        <div
+                          className={`mp-col-cell mp-col-side ${opCorrect ? 'correct' : 'wrong'}`}
+                        >
+                          {opFact?.question ?? '—'}
+                        </div>
                       </div>
+                    );
+                  })}
+                </div>
+                {/* Mobile: card list */}
+                <div className="mp-comparison">
+                  {rightAnswers.map((rightFact, i) => {
+                    const myFact = myAnswers[i];
+                    const opFact = opponentAnswers[i];
+                    const myCorrect = myFact?.id === rightFact?.id;
+                    const opCorrect = opFact?.id === rightFact?.id;
+                    return (
                       <div
-                        className="result-row correct"
-                        style={{ animationDelay: `${i * 150}ms` }}
+                        key={i}
+                        className="mp-compare-card"
+                        style={{ animationDelay: `${i * 100}ms` }}
                       >
-                        <span className="result-rank">{i + 1}.</span>
-                        <span className="result-question">{rightFact.question}</span>
-                        <span className="result-answer">
-                          {rightFact.answer?.toLocaleString('de-DE')}
-                        </span>
+                        <div className="mp-compare-correct">
+                          <span className="mp-compare-rank">{i + 1}</span>
+                          <span className="mp-compare-question">{rightFact.question}</span>
+                          <span className="mp-compare-value">
+                            {rightFact.answer?.toLocaleString('de-DE')}
+                          </span>
+                        </div>
+                        <div className="mp-compare-players">
+                          <div className={`mp-player-row ${myCorrect ? 'correct' : 'wrong'}`}>
+                            <span className="mp-player-label">Du</span>
+                            <span className="mp-compare-question">{myFact?.question}</span>
+                          </div>
+                          <div className={`mp-player-row ${opCorrect ? 'correct' : 'wrong'}`}>
+                            <span className="mp-player-label">Gegner</span>
+                            <span className="mp-compare-question">{opFact?.question}</span>
+                          </div>
+                        </div>
                       </div>
-                      <div
-                        className={`result-row ${opCorrect ? 'correct' : 'wrong'}`}
-                        style={{ animationDelay: `${i * 150}ms` }}
-                      >
-                        <span className="result-rank">{i + 1}.</span>
-                        <span className="result-question">{opFact?.question}</span>
-                      </div>
-                    </Fragment>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
               <div className="mp-result-buttons">
                 <button className="mp-btn secondary" onClick={() => navigate('/')}>
@@ -396,65 +428,111 @@ function MultiplayerPage() {
       </button>
       {disconnected && <div className="mp-disconnect-banner">Gegner hat das Spiel verlassen.</div>}
       <div className="question-stack">
-        {facts.slice(currentIndex, currentIndex + 3).map((fact, i) => (
-          <div
-            key={fact.id}
-            className={`question-card ${i === 0 ? 'active' : ''} ${i === 0 && keyboardSelected ? 'keyboard-selected' : ''}`}
-            style={{
-              zIndex: 3 - i,
-              transform: `translateY(${i * 8}px) scale(${1 - i * 0.04})`,
-              cursor: i === 0 ? 'grab' : 'default',
-            }}
-            draggable={i === 0}
-            onDragStart={i === 0 ? handleDragStartFromStack : undefined}
-          >
-            {i === 0 && <p>{fact.question}</p>}
+        {currentIndex >= facts.length ? (
+          <div className="stack-done">
+            <span className="stack-done-icon">✓</span>
+            <p>Alle Fragen platziert!</p>
+            <p className="stack-done-sub">
+              Drücke <strong>Submit</strong>, um fortzufahren.
+            </p>
           </div>
-        ))}
+        ) : (
+          facts.slice(currentIndex, currentIndex + 3).map((fact, i) => (
+            <div
+              key={fact.id}
+              className={`question-card ${i === 0 ? 'active' : ''} ${i === 0 && keyboardSelected ? 'keyboard-selected' : ''}`}
+              style={{
+                zIndex: 3 - i,
+                transform: `translateY(${i * 8}px) scale(${1 - i * 0.04})`,
+                cursor: i === 0 ? 'grab' : 'default',
+              }}
+              draggable={i === 0}
+              onDragStart={i === 0 ? handleDragStartFromStack : undefined}
+              onClick={
+                i === 0
+                  ? () => {
+                      if (dragItem && dragSource === 'stack') {
+                        setDragItem(null);
+                        setDragSource(null);
+                        setKeyboardSelected(false);
+                      } else if (!dragItem && currentIndex < facts.length) {
+                        handleDragStartFromStack();
+                        setKeyboardSelected(true);
+                      }
+                    }
+                  : undefined
+              }
+            >
+              {i === 0 && <p>{fact.question}</p>}
+            </div>
+          ))
+        )}
       </div>
       <div className="game-area">
-        <div className="progress-bar-wrapper">
-          <div
-            className="progress-bar-fill"
-            style={{ height: `${(currentIndex / facts.length) * 100}%` }}
-          />
-        </div>
         <div className="timeline-area">
           <span className="timeline-label top">MAX</span>
-          <div className="timeline-slots">
-            {sortedAnswers.map((slot, i) => (
-              <div key={i} className="slot-row">
-                <span className="slot-number">{i + 1}</span>
-                <div
-                  className={`timeline-slot ${slot ? 'filled' : ''} ${dragOverSlot === i ? 'drag-over' : ''} ${pulsedSlot === i ? 'pulse' : ''} ${selectedSlot === i ? 'keyboard-selected-slot' : ''}`}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    setDragOverSlot(i);
-                  }}
-                  onDragLeave={() => setDragOverSlot(null)}
-                  onDrop={() => {
-                    handleDropOnSlot(i);
-                    setDragOverSlot(null);
-                  }}
-                >
-                  {slot ? (
-                    <div
-                      className={`answer-chip placed${hardcore ? ' locked' : ''}`}
-                      draggable={!hardcore}
-                      onDragStart={!hardcore ? () => handleDragStartFromSlot(slot, i) : undefined}
-                    >
-                      {slot.question}
-                    </div>
-                  ) : (
-                    <span className="slot-placeholder">—</span>
-                  )}
+          <div className="slots-row">
+            <div
+              className="progress-bar-wrapper"
+              style={
+                { '--progress': `${(currentIndex / facts.length) * 100}%` } as React.CSSProperties
+              }
+            >
+              <div className="progress-bar-fill" />
+            </div>
+            <div className="timeline-slots">
+              {sortedAnswers.map((slot, i) => (
+                <div key={i} className="slot-row">
+                  <div
+                    className={`timeline-slot ${slot ? 'filled' : ''} ${dragOverSlot === i ? 'drag-over' : ''} ${pulsedSlot === i ? 'pulse' : ''} ${selectedSlot === i ? 'keyboard-selected-slot' : ''}`}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setDragOverSlot(i);
+                    }}
+                    onDragLeave={() => setDragOverSlot(null)}
+                    onDrop={() => {
+                      handleDropOnSlot(i);
+                      setDragOverSlot(null);
+                    }}
+                    onClick={() => {
+                      if (dragItem) {
+                        handleDropOnSlot(i);
+                        setDragOverSlot(null);
+                        setKeyboardSelected(false);
+                        setSelectedSlot(null);
+                      } else if (slot && !hardcore) {
+                        handleDragStartFromSlot(slot, i);
+                        setKeyboardSelected(true);
+                        setSelectedSlot(i);
+                      }
+                    }}
+                  >
+                    {slot ? (
+                      <div
+                        className={`answer-chip placed${hardcore ? ' locked' : ''}`}
+                        draggable={!hardcore}
+                        onDragStart={!hardcore ? () => handleDragStartFromSlot(slot, i) : undefined}
+                      >
+                        {slot.question}
+                      </div>
+                    ) : (
+                      <span className="slot-placeholder">{i + 1}</span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
           <span className="timeline-label bottom">MIN</span>
         </div>
         <div className="action-buttons">
+          {hardcore && timeLeft !== null && !submitted && (
+            <div
+              className={`game-timer${timeLeft <= 10 ? ' danger' : timeLeft <= 20 ? ' warning' : ''}`}
+            >
+              {timeLeft}
+            </div>
+          )}
           {submitted ? (
             <div className="mp-waiting-submitted">
               <div className="mp-spinner" />
@@ -469,13 +547,6 @@ function MultiplayerPage() {
             Leertaste = Karte nehmen &nbsp;|&nbsp; 1-{facts.length} = Position wählen &nbsp;|&nbsp;
             Entf = entfernen
           </p>
-          {hardcore && timeLeft !== null && !submitted && (
-            <div
-              className={`game-timer${timeLeft <= 10 ? ' danger' : timeLeft <= 20 ? ' warning' : ''}`}
-            >
-              {timeLeft}
-            </div>
-          )}
         </div>
       </div>
     </div>
