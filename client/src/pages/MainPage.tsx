@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, Fragment } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../config';
 import { useToast } from '../hooks/useToast';
@@ -262,29 +262,35 @@ function MainPage() {
       <div className="game-wrapper">
         <ToastContainer toasts={toasts} onRemove={removeToast} />
         <div className="result-comparison">
-          <div className="result-grid">
-            <div className="result-col-header">Dein Ergebnis</div>
-            <div className="result-col-header">Richtige Reihenfolge</div>
+          <div className="result-items">
             {sortedAnswers.map((fact, i) => {
               const rightFact = rightAnswers[i];
               const isCorrect = fact?.id === rightFact?.id;
               return (
-                <Fragment key={i}>
-                  <div
-                    className={`result-row ${isCorrect ? 'correct' : 'wrong'}`}
-                    style={{ animationDelay: `${i * 150}ms` }}
-                  >
-                    <span className="result-rank">{i + 1}.</span>
+                <div
+                  key={i}
+                  className="result-item-card"
+                  style={{ animationDelay: `${i * 100}ms` }}
+                >
+                  <div className={`result-item-row ${isCorrect ? 'correct' : 'wrong'}`}>
+                    <span className="result-rank">{i + 1}</span>
                     <span className="result-question">{fact?.question}</span>
+                    {isCorrect && (
+                      <span className="result-answer">
+                        {rightFact?.answer.toLocaleString('de-DE')} {rightFact?.unit}
+                      </span>
+                    )}
                   </div>
-                  <div className="result-row correct" style={{ animationDelay: `${i * 150}ms` }}>
-                    <span className="result-rank">{i + 1}.</span>
-                    <span className="result-question">{rightFact?.question}</span>
-                    <span className="result-answer">
-                      {rightFact?.answer.toLocaleString('de-DE')} {rightFact?.unit}
-                    </span>
-                  </div>
-                </Fragment>
+                  {!isCorrect && (
+                    <div className="result-item-row correct result-correct-row">
+                      <span className="result-arrow">→</span>
+                      <span className="result-question">{rightFact?.question}</span>
+                      <span className="result-answer">
+                        {rightFact?.answer.toLocaleString('de-DE')} {rightFact?.unit}
+                      </span>
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
@@ -332,21 +338,44 @@ function MainPage() {
       </button>
 
       <div className="question-stack">
-        {facts.slice(currentIndex, currentIndex + 3).map((fact, i) => (
-          <div
-            key={fact.id}
-            className={`question-card ${i === 0 ? 'active' : ''} ${i === 0 && keyboardSelected ? 'keyboard-selected' : ''}`}
-            style={{
-              zIndex: 3 - i,
-              transform: `translateY(${i * 8}px) scale(${1 - i * 0.04})`,
-              cursor: i === 0 ? 'grab' : 'default',
-            }}
-            draggable={i === 0}
-            onDragStart={i === 0 ? handleDragStartFromStack : undefined}
-          >
-            {i === 0 && <p>{fact.question}</p>}
+        {currentIndex >= facts.length ? (
+          <div className="stack-done">
+            <p>Alle Fragen platziert!</p>
+            <p className="stack-done-sub">
+              Drücke <strong>Submit</strong>, um fortzufahren.
+            </p>
           </div>
-        ))}
+        ) : (
+          facts.slice(currentIndex, currentIndex + 3).map((fact, i) => (
+            <div
+              key={fact.id}
+              className={`question-card ${i === 0 ? 'active' : ''} ${i === 0 && keyboardSelected ? 'keyboard-selected' : ''}`}
+              style={{
+                zIndex: 3 - i,
+                transform: `translateY(${i * 8}px) scale(${1 - i * 0.04})`,
+                cursor: i === 0 ? 'grab' : 'default',
+              }}
+              draggable={i === 0}
+              onDragStart={i === 0 ? handleDragStartFromStack : undefined}
+              onClick={
+                i === 0
+                  ? () => {
+                      if (dragItem && dragSource === 'stack') {
+                        setDragItem(null);
+                        setDragSource(null);
+                        setKeyboardSelected(false);
+                      } else if (!dragItem && currentIndex < facts.length) {
+                        handleDragStartFromStack();
+                        setKeyboardSelected(true);
+                      }
+                    }
+                  : undefined
+              }
+            >
+              {i === 0 && <p>{fact.question}</p>}
+            </div>
+          ))
+        )}
         {showPopup && !showResult && (
           <div className="popup-overlay">
             <div className="popup">
@@ -406,57 +435,65 @@ function MainPage() {
       </div>
 
       <div className="game-area">
-        <div className="progress-bar-wrapper">
-          <div
-            className="progress-bar-fill"
-            style={{ height: `${(currentIndex / facts.length) * 100}%` }}
-          />
-        </div>
         <div className="timeline-area">
           <span className="timeline-label top">MAX</span>
-          <div className="timeline-slots">
-            {sortedAnswers.map((slot, i) => (
-              <div key={i} className="slot-row">
-                <span className="slot-number">{i + 1}</span>
-                <div
-                  className={`timeline-slot ${slot ? 'filled' : ''} ${dragOverSlot === i ? 'drag-over' : ''} ${pulsedSlot === i ? 'pulse' : ''} ${waveActive ? 'wave' : ''} ${selectedSlot === i ? 'keyboard-selected-slot' : ''}`}
-                  style={waveActive ? { animationDelay: `${i * 100}ms` } : {}}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    setDragOverSlot(i);
-                  }}
-                  onDragLeave={() => setDragOverSlot(null)}
-                  onDrop={() => {
-                    handleDropOnSlot(i);
-                    setDragOverSlot(null);
-                  }}
-                >
-                  {slot ? (
-                    <div
-                      className={`answer-chip placed${hardcore ? ' locked' : ''}`}
-                      draggable={!hardcore}
-                      onDragStart={!hardcore ? () => handleDragStartFromSlot(slot, i) : undefined}
-                    >
-                      {slot.question}
-                    </div>
-                  ) : (
-                    <span className="slot-placeholder">—</span>
-                  )}
+          <div className="slots-row">
+            <div
+              className="progress-bar-wrapper"
+              style={
+                { '--progress': `${(currentIndex / facts.length) * 100}%` } as React.CSSProperties
+              }
+            >
+              <div className="progress-bar-fill" />
+            </div>
+            <div className="timeline-slots">
+              {sortedAnswers.map((slot, i) => (
+                <div key={i} className="slot-row">
+                  <div
+                    className={`timeline-slot ${slot ? 'filled' : ''} ${dragOverSlot === i ? 'drag-over' : ''} ${pulsedSlot === i ? 'pulse' : ''} ${waveActive ? 'wave' : ''} ${selectedSlot === i ? 'keyboard-selected-slot' : ''}`}
+                    style={waveActive ? { animationDelay: `${i * 100}ms` } : {}}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setDragOverSlot(i);
+                    }}
+                    onDragLeave={() => setDragOverSlot(null)}
+                    onDrop={() => {
+                      handleDropOnSlot(i);
+                      setDragOverSlot(null);
+                    }}
+                    onClick={() => {
+                      if (dragItem) {
+                        handleDropOnSlot(i);
+                        setDragOverSlot(null);
+                        setKeyboardSelected(false);
+                        setSelectedSlot(null);
+                      } else if (slot && !hardcore) {
+                        handleDragStartFromSlot(slot, i);
+                        setKeyboardSelected(true);
+                        setSelectedSlot(i);
+                      }
+                    }}
+                  >
+                    {slot ? (
+                      <div
+                        className={`answer-chip placed${hardcore ? ' locked' : ''}`}
+                        draggable={!hardcore}
+                        onDragStart={!hardcore ? () => handleDragStartFromSlot(slot, i) : undefined}
+                      >
+                        {slot.question}
+                      </div>
+                    ) : (
+                      <span className="slot-placeholder">{i + 1}</span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
           <span className="timeline-label bottom">MIN</span>
         </div>
 
         <div className="action-buttons">
-          <button className="submit-btn" onClick={handleSubmit} disabled={!allAnswered}>
-            Submit
-          </button>
-          <p className="keyboard-hint">
-            Space = Karte nehmen &nbsp;|&nbsp; 1-{facts.length} = Position wählen &nbsp;|&nbsp;
-            Delete = entfernen
-          </p>
           {hardcore && timeLeft !== null && (
             <div
               className={`game-timer${timeLeft <= 10 ? ' danger' : timeLeft <= 20 ? ' warning' : ''}`}
@@ -464,6 +501,13 @@ function MainPage() {
               {timeLeft}
             </div>
           )}
+          <button className="submit-btn" onClick={handleSubmit} disabled={!allAnswered}>
+            Submit
+          </button>
+          <p className="keyboard-hint">
+            Space = Karte nehmen &nbsp;|&nbsp; 1-{facts.length} = Position wählen &nbsp;|&nbsp;
+            Delete = entfernen
+          </p>
         </div>
       </div>
     </div>
