@@ -1,14 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface UseHardcoreTimerOptions {
-  /** Whether the countdown should be running right now. */
   active: boolean;
-  /** Changing this value (e.g. a new `facts` array, or a screen name) restarts the countdown. */
   resetKey: unknown;
   duration?: number;
   onExpire: () => void;
 }
 
+// counts down from `duration`, restarts whenever resetKey changes (new round, new screen)
 export function useHardcoreTimer({
   active,
   resetKey,

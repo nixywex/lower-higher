@@ -38,6 +38,7 @@ export function useDragDrop(hardcore: boolean) {
     setDragSource(null);
   }, []);
 
+  // drops the current card into a slot, swapping with whatever's already there if needed
   const dropOnSlot = useCallback(
     (slotIndex: number) => {
       if (!dragItem) return;
@@ -74,12 +75,8 @@ export function useDragDrop(hardcore: boolean) {
     [dragItem, dragSource, sortedAnswers, facts, currentIndex, hardcore]
   );
 
-  // Puts the exact fact that occupied `slotIndex` back at the top of the
-  // stack and rewinds currentIndex by one slot — regardless of *which* slot
-  // was cleared. Keying off "the most recently drawn card" instead (as the
-  // old duplicated code in both pages did) breaks as soon as slots are
-  // filled out of order, since the wrong fact gets reintroduced while the
-  // removed one stays orphaned in another slot.
+  // puts the removed card back on top of the stack, not wherever it used to be
+  // (that's what stops duplicates if slots got filled out of order)
   const removeFromSlot = useCallback(
     (slotIndex: number) => {
       const removed = sortedAnswers[slotIndex];
@@ -99,6 +96,7 @@ export function useDragDrop(hardcore: boolean) {
     [sortedAnswers, facts, currentIndex]
   );
 
+  // shuffles the leftover cards into the empty slots, used when the hardcore timer hits 0
   const autoFillRemaining = useCallback(() => {
     const remaining = facts.slice(currentIndex).sort(() => Math.random() - 0.5);
     const updated = [...sortedAnswers];

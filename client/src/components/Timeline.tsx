@@ -1,4 +1,5 @@
 import type { FactSummary } from '../types';
+import './Timeline.css';
 
 interface TimelineProps {
   sortedAnswers: (FactSummary | null)[];

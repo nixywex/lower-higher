@@ -10,6 +10,8 @@ import { getHardcoreMode } from '../hooks/useHardcoreMode';
 import { ToastContainer } from '../components/ToastContainer';
 import { QuestionStack } from '../components/QuestionStack';
 import { Timeline } from '../components/Timeline';
+import { GameTimer } from '../components/GameTimer';
+import { KeyboardHint } from '../components/KeyboardHint';
 import type { Fact, FactSummary } from '../types';
 import './MultiplayerPage.css';
 
@@ -152,7 +154,6 @@ function MultiplayerPage() {
     onSubmit: handleSubmit,
   });
 
-  // --- LOBBY ---
   if (screen === 'lobby')
     return (
       <div className="mp-wrapper">
@@ -184,7 +185,6 @@ function MultiplayerPage() {
       </div>
     );
 
-  // --- WAITING ---
   if (screen === 'waiting')
     return (
       <div className="mp-wrapper">
@@ -201,7 +201,6 @@ function MultiplayerPage() {
         </div>
       </div>
     );
-  // --- RESULT ---
   if (screen === 'result')
     return (
       <div className="mp-wrapper">
@@ -235,7 +234,6 @@ function MultiplayerPage() {
           ) : (
             <>
               <div className="mp-result-detail-wrapper">
-                {/* Desktop: 3-column grid */}
                 <div className="mp-col-result">
                   <div className="mp-col-header-row">
                     <div className="mp-col-header">Du</div>
@@ -270,7 +268,6 @@ function MultiplayerPage() {
                     );
                   })}
                 </div>
-                {/* Mobile: card list */}
                 <div className="mp-comparison">
                   {rightAnswers.map((rightFact, i) => {
                     const myFact = myAnswers[i];
@@ -319,7 +316,6 @@ function MultiplayerPage() {
       </div>
     );
 
-  // --- GAME ---
   return (
     <div className="game-wrapper">
       <ToastContainer toasts={toasts} onRemove={removeToast} />
@@ -371,13 +367,7 @@ function MultiplayerPage() {
           onChipDragStart={startDragFromSlot}
         />
         <div className="action-buttons">
-          {hardcore && timeLeft !== null && !submitted && (
-            <div
-              className={`game-timer${timeLeft <= 10 ? ' danger' : timeLeft <= 20 ? ' warning' : ''}`}
-            >
-              {timeLeft}
-            </div>
-          )}
+          {hardcore && !submitted && <GameTimer timeLeft={timeLeft} />}
           {submitted ? (
             <div className="mp-waiting-submitted">
               <div className="mp-spinner" />
@@ -388,10 +378,7 @@ function MultiplayerPage() {
               Submit
             </button>
           )}
-          <p className="keyboard-hint">
-            Leertaste = Karte nehmen &nbsp;|&nbsp; 1-{facts.length} = Position wählen &nbsp;|&nbsp;
-            Entf = entfernen
-          </p>
+          <KeyboardHint factsCount={facts.length} />
         </div>
       </div>
     </div>

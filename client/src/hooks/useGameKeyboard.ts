@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import type { FactSummary } from '../types';
 
 interface UseGameKeyboardOptions {
-  /** Whether shortcuts should currently respond — e.g. false while a result popup is shown. */
   active: boolean;
   hardcore: boolean;
   facts: FactSummary[];
@@ -16,6 +15,7 @@ interface UseGameKeyboardOptions {
   onSubmit: () => void;
 }
 
+// wires up space/enter/number/delete shortcuts so the game is playable without dragging
 export function useGameKeyboard({
   active,
   hardcore,

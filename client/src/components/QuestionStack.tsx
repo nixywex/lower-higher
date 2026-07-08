@@ -1,10 +1,10 @@
 import type { FactSummary } from '../types';
+import './QuestionStack.css';
 
 interface QuestionStackProps {
   facts: FactSummary[];
   currentIndex: number;
   keyboardSelected: boolean;
-  /** Icon shown next to the "all placed" message once the stack is empty. */
   emptyIcon?: string;
   onDragStart: () => void;
   onCardClick: () => void;

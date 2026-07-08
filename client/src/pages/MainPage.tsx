@@ -9,9 +9,12 @@ import { getHardcoreMode } from '../hooks/useHardcoreMode';
 import { ToastContainer } from '../components/ToastContainer';
 import { QuestionStack } from '../components/QuestionStack';
 import { Timeline } from '../components/Timeline';
+import { GameTimer } from '../components/GameTimer';
+import { KeyboardHint } from '../components/KeyboardHint';
 import type { Fact, FactSummary } from '../types';
 import './MainPage.css';
 
+// bails out with an error instead of hanging forever if the server never responds
 function fetchWithTimeout(url: string, options?: RequestInit, ms = 8000): Promise<Response> {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), ms);
@@ -321,20 +324,11 @@ function MainPage() {
         />
 
         <div className="action-buttons">
-          {hardcore && timeLeft !== null && (
-            <div
-              className={`game-timer${timeLeft <= 10 ? ' danger' : timeLeft <= 20 ? ' warning' : ''}`}
-            >
-              {timeLeft}
-            </div>
-          )}
+          {hardcore && <GameTimer timeLeft={timeLeft} />}
           <button className="submit-btn" onClick={handleSubmit} disabled={!allAnswered}>
             Submit
           </button>
-          <p className="keyboard-hint">
-            Space = Karte nehmen &nbsp;|&nbsp; 1-{facts.length} = Position wählen &nbsp;|&nbsp;
-            Delete = entfernen
-          </p>
+          <KeyboardHint factsCount={facts.length} />
         </div>
       </div>
     </div>
