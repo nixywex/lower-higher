@@ -1,16 +1,10 @@
-import { useState } from 'react';
 import './StartPage.css';
 import { useNavigate } from 'react-router-dom';
+import { useHardcoreMode } from '../hooks/useHardcoreMode';
 
 function StartPage() {
   const navigate = useNavigate();
-  const [hardcore, setHardcore] = useState(() => localStorage.getItem('hardcoreMode') === 'true');
-
-  const toggleHardcore = () => {
-    const next = !hardcore;
-    setHardcore(next);
-    localStorage.setItem('hardcoreMode', String(next));
-  };
+  const { hardcore, toggle: toggleHardcore } = useHardcoreMode();
 
   return (
     <div className="container">

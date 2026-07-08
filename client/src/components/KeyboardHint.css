@@ -1,0 +1,12 @@
+.keyboard-hint {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.3);
+  margin-top: 8px;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .keyboard-hint {
+    display: none;
+  }
+}

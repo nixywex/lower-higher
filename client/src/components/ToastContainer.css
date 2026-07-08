@@ -14,8 +14,8 @@
   align-items: center;
   gap: 0.5rem;
   background: #1e1e2e;
-  border: 1px solid #f87171;
-  border-left: 4px solid #f87171;
+  border: 1px solid var(--game-danger);
+  border-left: 4px solid var(--game-danger);
   border-radius: 8px;
   padding: 0.6rem 0.75rem;
   min-width: 220px;
@@ -29,7 +29,7 @@
 
 .toast-icon {
   font-size: 1rem;
-  color: #f87171;
+  color: var(--game-danger);
   flex-shrink: 0;
 }
 

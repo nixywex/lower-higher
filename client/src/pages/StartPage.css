@@ -1,16 +1,10 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
 .container {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: radial-gradient(ellipse at center, #0d2157 0%, #060e2b 100%);
-  font-family: Futura, 'Trebuchet MS', Arial, sans-serif;
+  background: radial-gradient(ellipse at center, var(--game-bg-start) 0%, var(--game-bg-end) 100%);
+  font-family: var(--game-font);
   position: relative;
   overflow: hidden;
 }
@@ -23,7 +17,7 @@
 
 .bg-shape {
   position: absolute;
-  border: 2px solid rgba(99, 179, 237, 0.3);
+  border: 2px solid rgba(var(--game-accent-rgb), 0.3);
   animation: floatLR linear infinite;
 }
 
@@ -81,7 +75,7 @@
 .card {
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(99, 179, 237, 0.2);
+  border: 1px solid rgba(var(--game-accent-rgb), 0.2);
   border-radius: 24px;
   padding: 48px 56px;
   display: flex;
@@ -91,7 +85,7 @@
   max-width: 520px;
   width: 90%;
   text-align: center;
-  box-shadow: 0 0 60px rgba(59, 130, 246, 0.15);
+  box-shadow: 0 0 60px rgba(var(--game-glow-rgb), 0.15);
 }
 
 .logo {
@@ -101,7 +95,7 @@
 }
 
 .arrow-up {
-  color: #63b3ed;
+  color: var(--game-accent);
   font-size: 28px;
 }
 
@@ -115,13 +109,13 @@
   color: white;
   font-style: italic;
   text-shadow:
-    0 0 10px rgba(99, 179, 237, 0.9),
-    0 0 30px rgba(99, 179, 237, 0.6),
-    0 0 60px rgba(99, 179, 237, 0.3);
+    0 0 10px rgba(var(--game-accent-rgb), 0.9),
+    0 0 30px rgba(var(--game-accent-rgb), 0.6),
+    0 0 60px rgba(var(--game-accent-rgb), 0.3);
 }
 
 .highlight {
-  color: #63b3ed;
+  color: var(--game-accent);
 }
 
 h2 {
@@ -140,7 +134,7 @@ h2 {
 .divider {
   width: 60%;
   height: 1px;
-  background: rgba(99, 179, 237, 0.3);
+  background: rgba(var(--game-accent-rgb), 0.3);
   margin: 4px 0;
 }
 
@@ -153,17 +147,17 @@ h2 {
   padding: 18px;
   font-size: 18px;
   font-weight: 700;
-  background: linear-gradient(135deg, #1a6fd4, #1e40af);
-  border: 2px solid #63b3ed;
+  background: linear-gradient(135deg, var(--game-btn-from), var(--game-btn-to));
+  border: 2px solid var(--game-accent);
   border-radius: 14px;
   color: white;
   cursor: pointer;
-  box-shadow: 0 0 30px rgba(99, 179, 237, 0.5);
+  box-shadow: 0 0 30px rgba(var(--game-accent-rgb), 0.5);
   transition: box-shadow 0.3s ease;
 }
 
 .start-button:hover {
-  box-shadow: 0 0 50px rgba(99, 179, 237, 0.8);
+  box-shadow: 0 0 50px rgba(var(--game-accent-rgb), 0.8);
 }
 
 .btn-icon {
@@ -191,17 +185,17 @@ h2 {
   padding: 18px;
   font-size: 18px;
   font-weight: 700;
-  background: linear-gradient(135deg, #1a6fd4, #1e40af);
-  border: 2px solid #63b3ed;
+  background: linear-gradient(135deg, var(--game-btn-from), var(--game-btn-to));
+  border: 2px solid var(--game-accent);
   border-radius: 14px;
   color: white;
   cursor: pointer;
-  box-shadow: 0 0 30px rgba(99, 179, 237, 0.5);
+  box-shadow: 0 0 30px rgba(var(--game-accent-rgb), 0.5);
   transition: box-shadow 0.3s ease;
 }
 
 .multiplayer-button:hover {
-  box-shadow: 0 0 50px rgba(99, 179, 237, 0.8);
+  box-shadow: 0 0 50px rgba(var(--game-accent-rgb), 0.8);
 }
 
 .hardcore-row {
@@ -239,7 +233,7 @@ h2 {
   height: 26px;
   border-radius: 13px;
   background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(99, 179, 237, 0.3);
+  border: 1px solid rgba(var(--game-accent-rgb), 0.3);
   cursor: pointer;
   position: relative;
   transition:
@@ -250,9 +244,9 @@ h2 {
 }
 
 .toggle-btn.active {
-  background: linear-gradient(135deg, #1a6fd4, #1e40af);
-  border-color: #63b3ed;
-  box-shadow: 0 0 16px rgba(99, 179, 237, 0.5);
+  background: linear-gradient(135deg, var(--game-btn-from), var(--game-btn-to));
+  border-color: var(--game-accent);
+  box-shadow: 0 0 16px rgba(var(--game-accent-rgb), 0.5);
 }
 
 .toggle-thumb {
