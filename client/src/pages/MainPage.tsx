@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../config';
 import { useToast } from '../hooks/useToast';
 import { ToastContainer } from '../components/ToastContainer';
+import { dropOnSlot, autoFillRemaining } from '../utils/gameLogic';
 import './MainPage.css';
 
 interface Fact {
@@ -85,31 +86,22 @@ function MainPage() {
 
   const handleDropOnSlot = (slotIndex: number) => {
     if (!dragItem) return;
-    const updated = [...sortedAnswers];
-
-    if (dragSource === 'stack') {
-      if (!updated[slotIndex]) {
-        updated[slotIndex] = dragItem;
-        setSortedAnswers(updated);
-        setPulsedSlot(slotIndex);
-        setTimeout(() => setPulsedSlot(null), 400);
-        setCurrentIndex((i) => i + 1);
-      } else if (!hardcore) {
-        const displaced = updated[slotIndex];
-        updated[slotIndex] = dragItem;
-        setSortedAnswers(updated);
-        const newFacts = [...facts];
-        newFacts[currentIndex] = displaced!;
-        setFacts(newFacts);
-        setPulsedSlot(slotIndex);
-        setTimeout(() => setPulsedSlot(null), 400);
-      }
-    } else if (typeof dragSource === 'number' && !hardcore) {
-      const fromSlot = dragSource;
-      const occupant = updated[slotIndex];
-      updated[slotIndex] = dragItem;
-      updated[fromSlot] = occupant ?? null;
-      setSortedAnswers(updated);
+    const wasEmpty = !sortedAnswers[slotIndex];
+    const result = dropOnSlot({
+      sortedAnswers,
+      facts,
+      currentIndex,
+      dragItem,
+      dragSource: dragSource!,
+      slotIndex,
+      hardcore,
+    });
+    setSortedAnswers(result.sortedAnswers);
+    setFacts(result.facts);
+    setCurrentIndex(result.currentIndex);
+    if (dragSource === 'stack' && (wasEmpty || !hardcore)) {
+      setPulsedSlot(slotIndex);
+      setTimeout(() => setPulsedSlot(null), 400);
     }
 
     setDragItem(null);
@@ -180,12 +172,7 @@ function MainPage() {
   useEffect(() => {
     if (timeLeft !== 0 || autoSubmitted.current) return;
     autoSubmitted.current = true;
-    const remaining = facts.slice(currentIndex).sort(() => Math.random() - 0.5);
-    const updated = [...sortedAnswers];
-    let ri = 0;
-    for (let i = 0; i < updated.length; i++) {
-      if (!updated[i] && remaining[ri]) updated[i] = remaining[ri++];
-    }
+    const updated = autoFillRemaining(facts, currentIndex, sortedAnswers);
     setSortedAnswers(updated);
     const ids = updated.filter(Boolean).map((f) => f!.id);
     fetch(`${API_URL}/api/facts/submit`, {
