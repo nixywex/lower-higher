@@ -1,21 +1,21 @@
-import { useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { API_URL } from '../config';
 import { useToast } from '../hooks/useToast';
+import { useDragDrop } from '../hooks/useDragDrop';
+import { useHardcoreTimer } from '../hooks/useHardcoreTimer';
+import { useGameKeyboard } from '../hooks/useGameKeyboard';
+import { getHardcoreMode } from '../hooks/useHardcoreMode';
 import { ToastContainer } from '../components/ToastContainer';
-import { dropOnSlot, autoFillRemaining } from '../utils/gameLogic';
+import { QuestionStack } from '../components/QuestionStack';
+import { Timeline } from '../components/Timeline';
+import { GameTimer } from '../components/GameTimer';
+import { KeyboardHint } from '../components/KeyboardHint';
+import type { Fact, FactSummary } from '../types';
 import './MultiplayerPage.css';
 
-interface Fact {
-  id: number;
-  question: string;
-  answer?: number;
-}
-
 type Screen = 'lobby' | 'waiting' | 'game' | 'result';
-
-let socket: Socket | null = null;
 
 function MultiplayerPage() {
   const navigate = useNavigate();
@@ -23,13 +23,6 @@ function MultiplayerPage() {
   const [joinInput, setJoinInput] = useState('');
   const [roomCode, setRoomCode] = useState('');
   const { toasts, addToast, removeToast } = useToast();
-  const [facts, setFacts] = useState<Fact[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [sortedAnswers, setSortedAnswers] = useState<(Fact | null)[]>([]);
-  const [dragItem, setDragItem] = useState<Fact | null>(null);
-  const [dragSource, setDragSource] = useState<'stack' | number | null>(null);
-  const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
-  const [pulsedSlot, setPulsedSlot] = useState<number | null>(null);
   const [myScore, setMyScore] = useState<number | null>(null);
   const [opponentScore, setOpponentScore] = useState<number | null>(null);
   const [rightAnswers, setRightAnswers] = useState<Fact[]>([]);
@@ -39,32 +32,48 @@ function MultiplayerPage() {
   const [submitted, setSubmitted] = useState(false);
   const [myAnswers, setMyAnswers] = useState<Fact[]>([]);
   const [opponentAnswers, setOpponentAnswers] = useState<Fact[]>([]);
-  const [keyboardSelected, setKeyboardSelected] = useState(false);
-  const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [hardcore, setHardcore] = useState(false);
-  const [timeLeft, setTimeLeft] = useState<number | null>(null);
-  const autoSubmitted = useRef(false);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const socketRef = useRef<Socket | null>(null);
+
+  const {
+    facts,
+    currentIndex,
+    sortedAnswers,
+    dragItem,
+    dragSource,
+    dragOverSlot,
+    pulsedSlot,
+    allAnswered,
+    loadFacts,
+    startDragFromStack,
+    startDragFromSlot,
+    cancelDrag,
+    dropOnSlot,
+    removeFromSlot,
+    autoFillRemaining,
+    submittedIds,
+    setDragOverSlot,
+  } = useDragDrop(hardcore);
 
   useEffect(() => {
-    socket = io(API_URL);
+    const socket = io(API_URL);
+    socketRef.current = socket;
 
     socket.on('roomCode', ({ code }: { code: string }) => {
       setRoomCode(code);
       setScreen('waiting');
     });
 
-    socket.on('roomReady', ({ facts, hardcore }: { facts: Fact[]; hardcore: boolean }) => {
-      setFacts(facts);
-      setSortedAnswers(new Array(facts.length).fill(null));
+    socket.on('roomReady', ({ facts, hardcore }: { facts: FactSummary[]; hardcore: boolean }) => {
+      loadFacts(facts);
       setHardcore(hardcore);
       setScreen('game');
     });
 
     socket.on('gameResult', (data) => {
       const { rightAnswers, scores, hostId, guestId, orders } = data;
-      const myId = socket!.id;
+      const myId = socket.id;
       setMyScore(scores[myId!] ?? 0);
       const opponentId = myId === hostId ? guestId : hostId;
       setOpponentScore(scores[opponentId] ?? 0);
@@ -86,18 +95,18 @@ function MultiplayerPage() {
     });
 
     return () => {
-      socket?.disconnect();
-      socket = null;
+      socket.disconnect();
+      socketRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCreateRoom = () => {
-    if (!socket?.connected) {
+    if (!socketRef.current?.connected) {
       addToast('Keine Verbindung zum Server. Bitte warte oder lade die Seite neu.');
       return;
     }
-    socket.emit('createRoom', { hardcore: localStorage.getItem('hardcoreMode') === 'true' });
+    socketRef.current.emit('createRoom', { hardcore: getHardcoreMode() });
   };
 
   const handleJoinRoom = () => {
@@ -105,143 +114,46 @@ function MultiplayerPage() {
       addToast('Bitte einen Raumcode eingeben.');
       return;
     }
-    if (!socket?.connected) {
+    if (!socketRef.current?.connected) {
       addToast('Keine Verbindung zum Server. Bitte warte oder lade die Seite neu.');
       return;
     }
-    socket.emit('joinRoom', { code: joinInput.toUpperCase() });
+    socketRef.current.emit('joinRoom', { code: joinInput.toUpperCase() });
   };
 
-  const handleDragStartFromStack = () => {
-    if (currentIndex >= facts.length) return;
-    setDragItem(facts[currentIndex]);
-    setDragSource('stack');
-  };
-
-  const handleDragStartFromSlot = (fact: Fact, slotIndex: number) => {
-    setDragItem(fact);
-    setDragSource(slotIndex);
-  };
-
-  const handleDropOnSlot = (slotIndex: number) => {
-    if (!dragItem) return;
-    const wasEmpty = !sortedAnswers[slotIndex];
-    const result = dropOnSlot({
-      sortedAnswers,
-      facts,
-      currentIndex,
-      dragItem,
-      dragSource: dragSource!,
-      slotIndex,
-      hardcore,
-    });
-    setSortedAnswers(result.sortedAnswers);
-    setFacts(result.facts);
-    setCurrentIndex(result.currentIndex);
-    if (dragSource === 'stack' && (wasEmpty || !hardcore)) {
-      setPulsedSlot(slotIndex);
-      setTimeout(() => setPulsedSlot(null), 400);
-    }
-    setDragItem(null);
-    setDragSource(null);
-  };
-
-  const allAnswered = sortedAnswers.length > 0 && sortedAnswers.every((s) => s !== null);
-
-  const handleSubmit = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-    setTimeLeft(null);
-    const ids = sortedAnswers.filter(Boolean).map((f) => f!.id);
-    socket?.emit('submitOrder', { ids });
+  const submitIds = useCallback((ids: number[]) => {
+    socketRef.current?.emit('submitOrder', { ids });
     setSubmitted(true);
-  };
+  }, []);
 
-  useEffect(() => {
-    if (!hardcore || screen !== 'game') return;
-    autoSubmitted.current = false;
-    if (timerRef.current) clearInterval(timerRef.current);
-    const DURATION = 60;
-    const startTime = Date.now();
-    const tick = () => {
-      const elapsed = Math.floor((Date.now() - startTime) / 1000);
-      const remaining = Math.max(0, DURATION - elapsed);
-      setTimeLeft(remaining);
-      if (remaining <= 0) {
-        clearInterval(timerRef.current!);
-        timerRef.current = null;
-      }
-    };
-    const initialId = setTimeout(tick, 0);
-    timerRef.current = setInterval(tick, 250);
-    return () => {
-      clearTimeout(initialId);
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [screen]);
+  const { timeLeft, stop: stopTimer } = useHardcoreTimer({
+    active: hardcore && screen === 'game',
+    resetKey: screen,
+    onExpire: useCallback(() => {
+      if (submitted) return;
+      submitIds(autoFillRemaining());
+    }, [submitted, submitIds, autoFillRemaining]),
+  });
 
-  useEffect(() => {
-    if (timeLeft !== 0 || autoSubmitted.current || submitted) return;
-    autoSubmitted.current = true;
-    const updated = autoFillRemaining(facts, currentIndex, sortedAnswers);
-    setSortedAnswers(updated);
-    const ids = updated.filter(Boolean).map((f) => f!.id);
-    socket?.emit('submitOrder', { ids });
-    setSubmitted(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeLeft]);
+  const handleSubmit = useCallback(() => {
+    stopTimer();
+    submitIds(submittedIds());
+  }, [stopTimer, submitIds, submittedIds]);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (screen !== 'game') return;
+  const { keyboardSelected, setKeyboardSelected, selectedSlot, setSelectedSlot } = useGameKeyboard({
+    active: screen === 'game',
+    hardcore,
+    facts,
+    sortedAnswers,
+    dragItem,
+    allAnswered,
+    startDragFromStack,
+    startDragFromSlot,
+    dropOnSlot,
+    removeFromSlot,
+    onSubmit: handleSubmit,
+  });
 
-      if (e.key === ' ' || e.key === 'Enter') {
-        e.preventDefault();
-        handleDragStartFromStack();
-        setKeyboardSelected(true);
-      }
-
-      if (e.key === 'Enter' && allAnswered && !dragItem) {
-        handleSubmit();
-      }
-
-      const num = parseInt(e.key);
-      if (!isNaN(num) && num >= 1 && num <= facts.length) {
-        if (dragItem) {
-          handleDropOnSlot(num - 1);
-          setKeyboardSelected(false);
-          setSelectedSlot(null);
-        } else if (sortedAnswers[num - 1] && !hardcore) {
-          setDragItem(sortedAnswers[num - 1]);
-          setDragSource(num - 1);
-          setKeyboardSelected(true);
-          setSelectedSlot(num - 1);
-        }
-      }
-
-      if ((e.key === 'Delete' || e.key === 'Backspace') && !hardcore) {
-        const firstFilled = sortedAnswers.findIndex((s) => s !== null);
-        if (firstFilled !== -1) {
-          const updated = [...sortedAnswers];
-          updated[firstFilled] = null;
-          setSortedAnswers(updated);
-          setCurrentIndex((i) => i - 1);
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dragItem, sortedAnswers, facts, currentIndex]);
-
-  // --- LOBBY ---
   if (screen === 'lobby')
     return (
       <div className="mp-wrapper">
@@ -273,7 +185,6 @@ function MultiplayerPage() {
       </div>
     );
 
-  // --- WAITING ---
   if (screen === 'waiting')
     return (
       <div className="mp-wrapper">
@@ -290,7 +201,6 @@ function MultiplayerPage() {
         </div>
       </div>
     );
-  // --- RESULT ---
   if (screen === 'result')
     return (
       <div className="mp-wrapper">
@@ -324,7 +234,6 @@ function MultiplayerPage() {
           ) : (
             <>
               <div className="mp-result-detail-wrapper">
-                {/* Desktop: 3-column grid */}
                 <div className="mp-col-result">
                   <div className="mp-col-header-row">
                     <div className="mp-col-header">Du</div>
@@ -359,7 +268,6 @@ function MultiplayerPage() {
                     );
                   })}
                 </div>
-                {/* Mobile: card list */}
                 <div className="mp-comparison">
                   {rightAnswers.map((rightFact, i) => {
                     const myFact = myAnswers[i];
@@ -408,7 +316,6 @@ function MultiplayerPage() {
       </div>
     );
 
-  // --- GAME ---
   return (
     <div className="game-wrapper">
       <ToastContainer toasts={toasts} onRemove={removeToast} />
@@ -417,111 +324,50 @@ function MultiplayerPage() {
       </button>
       {disconnected && <div className="mp-disconnect-banner">Gegner hat das Spiel verlassen.</div>}
       <div className="question-stack">
-        {currentIndex >= facts.length ? (
-          <div className="stack-done">
-            <span className="stack-done-icon">✓</span>
-            <p>Alle Fragen platziert!</p>
-            <p className="stack-done-sub">
-              Drücke <strong>Submit</strong>, um fortzufahren.
-            </p>
-          </div>
-        ) : (
-          facts.slice(currentIndex, currentIndex + 3).map((fact, i) => (
-            <div
-              key={fact.id}
-              className={`question-card ${i === 0 ? 'active' : ''} ${i === 0 && keyboardSelected ? 'keyboard-selected' : ''}`}
-              style={{
-                zIndex: 3 - i,
-                transform: `translateY(${i * 8}px) scale(${1 - i * 0.04})`,
-                cursor: i === 0 ? 'grab' : 'default',
-              }}
-              draggable={i === 0}
-              onDragStart={i === 0 ? handleDragStartFromStack : undefined}
-              onClick={
-                i === 0
-                  ? () => {
-                      if (dragItem && dragSource === 'stack') {
-                        setDragItem(null);
-                        setDragSource(null);
-                        setKeyboardSelected(false);
-                      } else if (!dragItem && currentIndex < facts.length) {
-                        handleDragStartFromStack();
-                        setKeyboardSelected(true);
-                      }
-                    }
-                  : undefined
-              }
-            >
-              {i === 0 && <p>{fact.question}</p>}
-            </div>
-          ))
-        )}
+        <QuestionStack
+          facts={facts}
+          currentIndex={currentIndex}
+          keyboardSelected={keyboardSelected}
+          emptyIcon="✓"
+          onDragStart={startDragFromStack}
+          onCardClick={() => {
+            if (dragItem && dragSource === 'stack') {
+              cancelDrag();
+              setKeyboardSelected(false);
+            } else if (!dragItem && currentIndex < facts.length) {
+              startDragFromStack();
+              setKeyboardSelected(true);
+            }
+          }}
+        />
       </div>
       <div className="game-area">
-        <div className="timeline-area">
-          <span className="timeline-label top">MAX</span>
-          <div className="slots-row">
-            <div
-              className="progress-bar-wrapper"
-              style={
-                { '--progress': `${(currentIndex / facts.length) * 100}%` } as React.CSSProperties
-              }
-            >
-              <div className="progress-bar-fill" />
-            </div>
-            <div className="timeline-slots">
-              {sortedAnswers.map((slot, i) => (
-                <div key={i} className="slot-row">
-                  <div
-                    className={`timeline-slot ${slot ? 'filled' : ''} ${dragOverSlot === i ? 'drag-over' : ''} ${pulsedSlot === i ? 'pulse' : ''} ${selectedSlot === i ? 'keyboard-selected-slot' : ''}`}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      setDragOverSlot(i);
-                    }}
-                    onDragLeave={() => setDragOverSlot(null)}
-                    onDrop={() => {
-                      handleDropOnSlot(i);
-                      setDragOverSlot(null);
-                    }}
-                    onClick={() => {
-                      if (dragItem) {
-                        handleDropOnSlot(i);
-                        setDragOverSlot(null);
-                        setKeyboardSelected(false);
-                        setSelectedSlot(null);
-                      } else if (slot && !hardcore) {
-                        handleDragStartFromSlot(slot, i);
-                        setKeyboardSelected(true);
-                        setSelectedSlot(i);
-                      }
-                    }}
-                  >
-                    {slot ? (
-                      <div
-                        className={`answer-chip placed${hardcore ? ' locked' : ''}`}
-                        draggable={!hardcore}
-                        onDragStart={!hardcore ? () => handleDragStartFromSlot(slot, i) : undefined}
-                      >
-                        {slot.question}
-                      </div>
-                    ) : (
-                      <span className="slot-placeholder">{i + 1}</span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <span className="timeline-label bottom">MIN</span>
-        </div>
+        <Timeline
+          sortedAnswers={sortedAnswers}
+          factsLength={facts.length}
+          currentIndex={currentIndex}
+          hardcore={hardcore}
+          dragOverSlot={dragOverSlot}
+          pulsedSlot={pulsedSlot}
+          selectedSlot={selectedSlot}
+          onDragOverSlot={setDragOverSlot}
+          onDragLeaveSlot={() => setDragOverSlot(null)}
+          onDropSlot={dropOnSlot}
+          onSlotClick={(i, slot) => {
+            if (dragItem) {
+              dropOnSlot(i);
+              setKeyboardSelected(false);
+              setSelectedSlot(null);
+            } else if (slot && !hardcore) {
+              startDragFromSlot(slot, i);
+              setKeyboardSelected(true);
+              setSelectedSlot(i);
+            }
+          }}
+          onChipDragStart={startDragFromSlot}
+        />
         <div className="action-buttons">
-          {hardcore && timeLeft !== null && !submitted && (
-            <div
-              className={`game-timer${timeLeft <= 10 ? ' danger' : timeLeft <= 20 ? ' warning' : ''}`}
-            >
-              {timeLeft}
-            </div>
-          )}
+          {hardcore && !submitted && <GameTimer timeLeft={timeLeft} />}
           {submitted ? (
             <div className="mp-waiting-submitted">
               <div className="mp-spinner" />
@@ -532,10 +378,7 @@ function MultiplayerPage() {
               Submit
             </button>
           )}
-          <p className="keyboard-hint">
-            Leertaste = Karte nehmen &nbsp;|&nbsp; 1-{facts.length} = Position wählen &nbsp;|&nbsp;
-            Entf = entfernen
-          </p>
+          <KeyboardHint factsCount={facts.length} />
         </div>
       </div>
     </div>

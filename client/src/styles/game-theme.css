@@ -1,0 +1,30 @@
+:root {
+  --game-font: Futura, 'Trebuchet MS', Arial, sans-serif;
+
+  --game-bg-start: #0d2157;
+  --game-bg-end: #060e2b;
+
+  --game-accent: #63b3ed;
+  --game-accent-rgb: 99, 179, 237;
+
+  --game-btn-from: #1a6fd4;
+  --game-btn-to: #1e40af;
+
+  --game-glow-rgb: 59, 130, 246;
+
+  --game-purple: #a78bfa;
+  --game-purple-rgb: 167, 139, 250;
+
+  --game-success: #4ade80;
+  --game-success-rgb: 74, 222, 128;
+
+  --game-danger: #f87171;
+  --game-danger-rgb: 248, 113, 113;
+  --game-danger-light: #fc8181;
+  --game-danger-light-rgb: 252, 129, 129;
+
+  --game-warning: #fb923c;
+  --game-warning-rgb: 251, 146, 60;
+
+  --game-draw: #facc15;
+}
