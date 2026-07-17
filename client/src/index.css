@@ -81,7 +81,18 @@ body {
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: radial-gradient(ellipse at center, var(--game-bg-start) 0%, var(--game-bg-end) 100%);
+  background:
+    radial-gradient(
+      42rem 42rem at 18% 12%,
+      rgba(var(--game-accent-rgb, 99, 179, 237), 0.16),
+      transparent 60%
+    ),
+    radial-gradient(
+      38rem 38rem at 85% 88%,
+      rgba(var(--game-purple-rgb, 167, 139, 250), 0.14),
+      transparent 60%
+    ),
+    radial-gradient(ellipse at center, var(--game-bg-start) 0%, var(--game-bg-end) 100%);
   pointer-events: none;
 }
 

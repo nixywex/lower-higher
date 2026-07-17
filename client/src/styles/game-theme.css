@@ -1,5 +1,5 @@
 :root {
-  --game-font: Futura, 'Trebuchet MS', Arial, sans-serif;
+  --game-font: 'Outfit', 'Futura', 'Trebuchet MS', system-ui, sans-serif;
 
   --game-bg-start: #0d2157;
   --game-bg-end: #060e2b;
