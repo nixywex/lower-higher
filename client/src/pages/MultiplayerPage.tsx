@@ -158,20 +158,21 @@ function MultiplayerPage() {
     return (
       <div className="mp-wrapper">
         <ToastContainer toasts={toasts} onRemove={removeToast} />
-        <button className="exit-btn" onClick={() => navigate('/')}>
+        <button className="exit-btn" onClick={() => navigate('/')} aria-label="Verlassen">
           ✕
         </button>
         <div className="mp-card">
           <h1 className="mp-title">Multiplayer</h1>
           <div className="mp-divider" />
           <button className="mp-btn primary" onClick={handleCreateRoom}>
-            <span>🎮</span> Create Room
+            <span aria-hidden="true">🎮</span> Create Room
           </button>
           <div className="mp-or">oder</div>
           <div className="mp-join-row">
             <input
               className="mp-input"
               placeholder="Room Code"
+              aria-label="Raumcode"
               value={joinInput}
               onChange={(e) => setJoinInput(e.target.value)}
               maxLength={4}
@@ -189,7 +190,7 @@ function MultiplayerPage() {
     return (
       <div className="mp-wrapper">
         <ToastContainer toasts={toasts} onRemove={removeToast} />
-        <button className="exit-btn" onClick={() => navigate('/')}>
+        <button className="exit-btn" onClick={() => navigate('/')} aria-label="Verlassen">
           ✕
         </button>
         <div className="mp-card">
@@ -319,7 +320,7 @@ function MultiplayerPage() {
   return (
     <div className="game-wrapper">
       <ToastContainer toasts={toasts} onRemove={removeToast} />
-      <button className="exit-btn" onClick={() => navigate('/')}>
+      <button className="exit-btn" onClick={() => navigate('/')} aria-label="Spiel verlassen">
         ✕
       </button>
       {disconnected && <div className="mp-disconnect-banner">Gegner hat das Spiel verlassen.</div>}

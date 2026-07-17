@@ -195,8 +195,9 @@ function MainPage() {
 
   if (loading)
     return (
-      <div className="loading">
+      <div className="loading" role="status" aria-live="polite">
         <ToastContainer toasts={toasts} onRemove={removeToast} />
+        <div className="loading-spinner" aria-hidden="true" />
         Loading...
       </div>
     );
@@ -220,7 +221,7 @@ function MainPage() {
   return (
     <div className="game-wrapper">
       <ToastContainer toasts={toasts} onRemove={removeToast} />
-      <button className="exit-btn" onClick={() => navigate('/')}>
+      <button className="exit-btn" onClick={() => navigate('/')} aria-label="Spiel verlassen">
         ✕
       </button>
 

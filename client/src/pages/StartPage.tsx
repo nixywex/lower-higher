@@ -16,11 +16,15 @@ function StartPage() {
       </div>
       <div className="card">
         <div className="logo">
-          <span className="arrow-up">▲</span>
+          <span className="arrow-up" aria-hidden="true">
+            ▲
+          </span>
           <h1 className="logo-title">
             Higher-<span className="highlight">Lower</span>
           </h1>
-          <span className="arrow-down">▼</span>
+          <span className="arrow-down" aria-hidden="true">
+            ▼
+          </span>
         </div>
         <h2>Willkommen beim Higher-Lower-Spiel!</h2>
         <p className="subtitle">Stelle dein Gespür auf die Probe und erziele die längste Serie.</p>
@@ -42,17 +46,25 @@ function StartPage() {
         </div>
         <div className="divider" />
         <button className="start-button" onClick={() => navigate('/game')}>
-          <span className="btn-icon">👤</span>
+          <span className="btn-icon" aria-hidden="true">
+            👤
+          </span>
           Singleplayer
-          <span className="btn-arrow">›</span>
+          <span className="btn-arrow" aria-hidden="true">
+            ›
+          </span>
         </button>
         <button
           className="start-button multiplayer-button"
           onClick={() => navigate('/multiplayer')}
         >
-          <span className="btn-icon">👥</span>
+          <span className="btn-icon" aria-hidden="true">
+            👥
+          </span>
           Multiplayer
-          <span className="btn-arrow">›</span>
+          <span className="btn-arrow" aria-hidden="true">
+            ›
+          </span>
         </button>
         <p className="press-start">· Drücke Start, um das Spiel zu starten ·</p>
       </div>

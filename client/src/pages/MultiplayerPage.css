@@ -1,6 +1,7 @@
 .mp-wrapper {
+  width: 100%;
   min-height: 100svh;
-  background: radial-gradient(ellipse at center, var(--game-bg-start) 0%, var(--game-bg-end) 100%);
+  background: transparent;
   color: white;
   font-family: var(--game-font);
   display: flex;
@@ -8,6 +9,7 @@
   justify-content: center;
   position: relative;
   padding: 24px 16px;
+  overflow: hidden;
 }
 
 .mp-card {
@@ -55,12 +57,18 @@
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  transition: box-shadow 0.2s;
+  transition:
+    box-shadow 0.2s,
+    transform 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
   touch-action: manipulation;
+}
+
+.mp-btn:active {
+  transform: scale(0.98);
 }
 
 .mp-btn.primary {
