@@ -1,149 +1,72 @@
 # Lower-Higher – Server
 
-REST-API und WebSocket-Server für das Lower-Higher-Spiel. Liefert zufällige Fakten, berechnet den Score serverseitig und verwaltet Multiplayer-Räume über Socket.io.
+Der Server liefert die Fakten für eine Runde. Er berechnet auch die Punkte. Der
+Multiplayer läuft über Socket.io.
 
-## Tech Stack
+## Technik
 
-- **Runtime:** Bun
-- **Framework:** Express 5
-- **WebSockets:** Socket.io
-- **Sprache:** TypeScript
-- **Datenspeicher:** `facts.json`
+- Bun und TypeScript
+- Express
+- Socket.io
+- `facts.json` als Datenspeicher
 
 ## Ordnerstruktur
 
-```
+```text
 server/
-├── index.ts              # Einstiegspunkt, Express- & Socket.io-Setup
-├── config.ts             # Konfigurationswerte (Anzahl Fakten, Max-Punkte)
-├── facts.json            # Faktendatenbank (flat file)
-├── routes/
-│   └── facts.ts          # REST-Routen /api/facts
-├── socket/
-│   └── gameSocket.ts     # Socket.io-Eventhandler für Multiplayer
-├── utils/
-│   ├── facts_handling.ts # Fakten laden & filtern
-│   ├── mapping.ts        # Fakten für den Client aufbereiten (Antworten entfernen)
-│   ├── rooms.ts          # In-Memory-Raumverwaltung
-│   ├── scoring.ts        # Punkte berechnen
-│   └── storing.ts        # facts.json einlesen & cachen
-├── types/
-│   └── index.ts          # Shared TypeScript-Interfaces
-└── tests/
-    ├── scoring.test.ts
-    ├── rooms.test.ts
-    ├── mapping.test.ts
-    ├── facts_handling.test.ts
-    └── routes.test.ts
+├── routes/          # REST-Endpunkte
+├── socket/          # Multiplayer-Events
+├── tests/           # Backend-Tests
+├── types/           # Gemeinsame Typen
+├── utils/           # Fakten, Räume und Punkte
+├── config.ts        # Anzahl der Fakten und maximale Punkte
+├── facts.json       # 100 Fakten
+└── index.ts         # Start des Servers
 ```
 
 ## REST-API
 
-### `GET /api/facts/round`
+| Methode | Route               | Aufgabe                                        |
+| ------- | ------------------- | ---------------------------------------------- |
+| `GET`   | `/api/facts/round`  | Liefert sieben Fakten ohne Zahlenwerte         |
+| `POST`  | `/api/facts/submit` | Prüft die Reihenfolge und berechnet die Punkte |
 
-Gibt 7 zufällig ausgewählte Fakten zurück – **ohne** die Antwortzahlen.
+Die richtige Reihenfolge läuft von `MAX` nach `MIN`. Die Zahlenwerte werden erst
+nach dem Absenden an den Client geschickt.
 
-**Response `200`:**
+Die genaue REST-Doku steht in [`../docs/openapi.yaml`](../docs/openapi.yaml).
 
-```json
-[
-  { "id": 3, "question": "Wie hoch ist der Eiffelturm in Metern?" },
-  ...
-]
-```
+## Multiplayer
 
----
+Ein Spieler erstellt einen Raum. Der Server gibt einen vierstelligen Code
+zurück. Eine zweite Person kann mit diesem Code beitreten. Beide bekommen
+dieselben Fakten.
 
-### `POST /api/facts/submit`
+Der Hardcore-Modus des Hosts gilt für beide Personen. Das Ergebnis wird
+geschickt, sobald beide ihre Reihenfolge abgegeben haben.
 
-Nimmt die vom Nutzer gewählte Reihenfolge (als ID-Array) entgegen und berechnet den Score serverseitig.
+Alle Events stehen in [`../docs/websocket.md`](../docs/websocket.md).
 
-**Request Body:**
+## Punkte
 
-```json
-{ "ids": [3, 7, 1, 5, 2, 6, 4] }
-```
+Eine Runde hat sieben Fakten. Pro Platz sind bis zu 10.000 Punkte möglich. Die
+maximale Punktzahl ist 70.000.
 
-**Response `200`:**
-
-```json
-{
-  "rightAnswers": [{ "id": 1, "question": "...", "answer": 42 }, ...],
-  "score": 8450
-}
-```
-
-**Response `400`** – bei ungültiger Eingabe:
-
-```json
-{ "message": "ids must be a non-empty array of numbers" }
-```
-
-```json
-{ "message": "One or more ids do not exist" }
-```
-
-> ⚠️ Die Antwortzahlen verlassen den Server **ausschließlich** nach dem Submit – nie beim Laden der Runde.
-
----
-
-## Socket.io-API (Multiplayer)
-
-Verbindung unter `ws://<host>:<port>`. Alle Events sind bidirektional über Socket.io.
-
-### Client → Server
-
-| Event         | Payload             | Beschreibung                                      |
-| ------------- | ------------------- | ------------------------------------------------- |
-| `createRoom`  | –                   | Erstellt einen neuen Raum und erhält den Raumcode |
-| `joinRoom`    | `{ code: string }`  | Tritt einem wartenden Raum bei                    |
-| `submitOrder` | `{ ids: number[] }` | Sendet die gewählte Reihenfolge der Fakten-IDs    |
-
-### Server → Client
-
-| Event                | Payload                                             | Beschreibung                             |
-| -------------------- | --------------------------------------------------- | ---------------------------------------- |
-| `roomCode`           | `{ code: string }`                                  | Raumcode nach erfolgreichem `createRoom` |
-| `roomReady`          | `{ facts: FactForClient[] }`                        | Beide Spieler verbunden – Spiel beginnt  |
-| `gameResult`         | `{ rightAnswers, scores, orders, hostId, guestId }` | Ergebnis nach Abgabe beider Spieler      |
-| `playerDisconnected` | –                                                   | Gegner hat die Verbindung getrennt       |
-| `gameError`          | `{ message: string }`                               | Fehlermeldung bei ungültigen Aktionen    |
-
-### Ablauf
-
-```
-Host              Server              Guest
- |  createRoom       |                  |
- |---------------->  |                  |
- |  roomCode(code)   |                  |
- |  <--------------  |                  |
- |                   |  joinRoom(code)  |
- |                   | <--------------- |
- |  roomReady        |   roomReady      |
- |  <--------------  | --------------> |
- |  submitOrder      |                  |
- |---------------->  |                  |
- |                   |  submitOrder     |
- |                   | <--------------- |
- |  gameResult       |   gameResult     |
- |  <--------------  | --------------> |
-```
-
-## Punkte-System
-
-Pro Fakt können maximal **10.000 Punkte** erreicht werden. Der Score basiert auf der absoluten Differenz zwischen der richtigen Antwort und der vom Nutzer platzierten Antwort. Liegt die Differenz über dem Maximum, gibt es 0 Punkte für diese Position.
-
-## Setup & Start
+## Start
 
 ```bash
 bun install
-
-# Entwicklung (mit Hot Reload)
 bun run dev
-
-# Produktion
-bun run start
-
-# Tests
-bun test
 ```
+
+Der Server läuft standardmäßig unter <http://localhost:3000>.
+
+## Befehle
+
+| Befehl          | Aufgabe                       |
+| --------------- | ----------------------------- |
+| `bun run dev`   | Server mit Hot Reload starten |
+| `bun run start` | Server normal starten         |
+| `bun test`      | Backend-Tests starten         |
+
+Die Variablen `PORT` und `CORS_ORIGIN` können bei Bedarf gesetzt werden.

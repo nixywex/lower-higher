@@ -3,11 +3,12 @@ openapi: 3.1.0
 info:
   title: Lower-Higher API
   description: >
-    REST-API für das Lower-Higher-Sortierspiel. Liefert Fakten für eine Spielrunde und bewertet die Nutzer-Sortierung serverseitig.
+    REST-API für das Lower-Higher-Spiel. Sie liefert die Fakten für eine Runde
+    und berechnet die Punkte.
 
 
-    Für den Multiplayer-Modus wird zusätzlich Socket.io (WebSocket) verwendet.
-    Die Events und Payloads sind in `docs/websocket.md` dokumentiert.
+    Der Multiplayer läuft über Socket.io. Die Events stehen in
+    `docs/websocket.md`.
   version: 1.1.0
 
 servers:
@@ -24,7 +25,7 @@ paths:
       tags:
         - Facts
       summary: Neue Spielrunde starten
-      description: Gibt 7 zufällig ausgewählte Fakten zurück. Die Antwortzahlen werden **nicht** mitgeliefert.
+      description: Gibt 7 zufällige Fakten ohne Zahlenwerte zurück.
       responses:
         '200':
           description: Liste der Fakten für diese Runde
@@ -66,9 +67,9 @@ paths:
         - Facts
       summary: Sortierung einreichen und Punkte erhalten
       description: >
-        Nimmt die vom Nutzer gewählte Reihenfolge als ID-Array entgegen.
-        Der Server berechnet den Score anhand der Positionsabweichungen zur richtigen Reihenfolge.
-        Die korrekten Antwortzahlen werden erst hier zurückgegeben.
+        Nimmt die Reihenfolge als ID-Array an. Die größte Zahl steht an Position
+        0. Der Server berechnet danach die Punkte. Die Zahlenwerte werden erst
+        mit dem Ergebnis zurückgegeben.
       requestBody:
         required: true
         content:
@@ -76,7 +77,7 @@ paths:
             schema:
               $ref: '#/components/schemas/SubmitRequest'
             example:
-              ids: [3, 2, 9, 1, 7, 12, 5]
+              ids: [5, 1, 3, 7, 9, 12, 2]
       responses:
         '200':
           description: Auswertung mit korrekter Reihenfolge und erreichtem Score
@@ -86,28 +87,28 @@ paths:
                 $ref: '#/components/schemas/SubmitResponse'
               example:
                 rightAnswers:
-                  - id: 2
-                    question: 'Wie viele Zähne hat ein erwachsener Mensch?'
-                    answer: 32
-                  - id: 3
-                    question: 'Wie hoch ist der Eiffelturm in Metern?'
-                    answer: 330
-                  - id: 9
-                    question: 'Wie viele Länder gibt es auf der Erde?'
-                    answer: 195
-                  - id: 7
-                    question: 'Wie viele Knochen hat ein erwachsener Mensch?'
-                    answer: 206
-                  - id: 12
-                    question: 'Wie schnell fliegt ein Gepard in km/h?'
-                    answer: 112
-                  - id: 1
-                    question: 'In welchem Jahr wurde die Titanic gebaut?'
-                    answer: 1909
                   - id: 5
                     question: 'Wie viele Meter tief ist der Mariannengraben?'
                     answer: 11034
-                score: 7850
+                  - id: 1
+                    question: 'In welchem Jahr wurde die Titanic gebaut?'
+                    answer: 1909
+                  - id: 3
+                    question: 'Wie hoch ist der Eiffelturm in Metern?'
+                    answer: 330
+                  - id: 7
+                    question: 'Wie viele Knochen hat ein erwachsener Mensch?'
+                    answer: 206
+                  - id: 9
+                    question: 'Wie viele Länder gibt es auf der Erde?'
+                    answer: 195
+                  - id: 12
+                    question: 'Wie schnell fliegt ein Gepard in km/h?'
+                    answer: 112
+                  - id: 2
+                    question: 'Wie viele Zähne hat ein erwachsener Mensch?'
+                    answer: 32
+                score: 70000
         '400':
           description: Ungültige Eingabe
           content:
@@ -145,23 +146,23 @@ components:
 
     FactForClient:
       type: object
-      description: Ein Fakt ohne Antwortzahl – wird ans Frontend gesendet
+      description: Ein Fakt ohne Zahlenwert
       required:
         - id
         - question
       properties:
         id:
           type: integer
-          description: Eindeutige ID des Fakts
+          description: ID des Fakts
           example: 3
         question:
           type: string
-          description: Die Frage / Beschreibung des Fakts
+          description: Text des Fakts
           example: 'Wie hoch ist der Eiffelturm in Metern?'
 
     Fact:
       type: object
-      description: Ein vollständiger Fakt inkl. Antwortzahl – nur serverseitig / im Submit-Response
+      description: Ein Fakt mit Zahlenwert
       required:
         - id
         - question
@@ -175,7 +176,7 @@ components:
           example: 'Wie hoch ist der Eiffelturm in Metern?'
         answer:
           type: number
-          description: Numerischer Antwortwert (wird für die Sortierung verwendet)
+          description: Zahlenwert für die Sortierung
           example: 330
 
     SubmitRequest:
@@ -185,12 +186,12 @@ components:
       properties:
         ids:
           type: array
-          description: IDs der Fakten in der vom Nutzer gewählten Reihenfolge (Index 0 = kleinster Wert)
+          description: IDs von MAX nach MIN. Index 0 hat den größten Wert.
           items:
             type: integer
           minItems: 7
           maxItems: 7
-          example: [3, 2, 9, 1, 7, 12, 5]
+          example: [5, 1, 3, 7, 9, 12, 2]
 
     SubmitResponse:
       type: object
@@ -200,64 +201,76 @@ components:
       properties:
         rightAnswers:
           type: array
-          description: Fakten in der korrekten aufsteigenden Reihenfolge inkl. Antwortzahlen
+          description: Richtige Reihenfolge von MAX nach MIN
           items:
             $ref: '#/components/schemas/Fact'
         score:
           type: integer
-          description: Erreichte Punktzahl dieser Runde
-          example: 7850
+          description: Punkte der Runde
+          example: 70000
 
     # --- Multiplayer (Socket.io) ---
     # Vollständige Event-Dokumentation: docs/websocket.md
 
     RoomCode:
       type: object
-      description: Vom Server generierter Raum-Code nach createRoom
+      description: Raumcode nach createRoom
       required:
         - code
       properties:
         code:
           type: string
-          description: 4-stelliger alphanumerischer Code
+          description: Vierstelliger Code
           example: X7K2
 
     RoomReady:
       type: object
-      description: Wird an beide Spieler gesendet, sobald der Gast beigetreten ist
+      description: Startet das Spiel für beide Personen
       required:
         - facts
+        - hardcore
       properties:
         facts:
           type: array
-          description: Die Fakten dieser Runde (ohne Antwortzahlen)
+          description: Fakten ohne Zahlenwerte
           items:
             $ref: '#/components/schemas/FactForClient'
           minItems: 7
           maxItems: 7
+        hardcore:
+          type: boolean
+          description: Zeigt, ob der Hardcore-Modus aktiv ist
 
     GameResult:
       type: object
-      description: Wird an beide Spieler gesendet, sobald beide ihre Reihenfolge eingereicht haben
+      description: Ergebnis nach der Abgabe von beiden Personen
       required:
         - rightAnswers
         - scores
+        - orders
         - hostId
         - guestId
       properties:
         rightAnswers:
           type: array
-          description: Fakten in der korrekten aufsteigenden Reihenfolge inkl. Antwortzahlen
+          description: Richtige Reihenfolge von MAX nach MIN
           items:
             $ref: '#/components/schemas/Fact'
         scores:
           type: object
-          description: Score pro Socket-ID
+          description: Punkte pro Socket-ID
           additionalProperties:
             type: integer
           example:
             abc123: 62000
             def456: 81000
+        orders:
+          type: object
+          description: Abgegebene Reihenfolge pro Socket-ID
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/Fact'
         hostId:
           type: string
           description: Socket-ID des Hosts

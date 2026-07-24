@@ -1,55 +1,67 @@
 # Lower-Higher – Client
 
-React-Frontend für das Lower-Higher-Spiel. Zeigt Fakten an und ermöglicht das Sortieren per Drag & Drop.
+Das Frontend zeigt das Spiel an. Die Fakten werden von `MAX` nach `MIN`
+sortiert. Es gibt Singleplayer, Multiplayer und einen Hardcore-Modus.
 
-## Tech Stack
+## Technik
 
-| Paket                             | Status         |
-| --------------------------------- | -------------- |
-| React 19 + TypeScript             | ✅ installiert |
-| Vite                              | ✅ installiert |
-| Tailwind CSS                      | 🔧 geplant     |
-| @dnd-kit/core + @dnd-kit/sortable | 🔧 geplant     |
+- React und TypeScript
+- Vite
+- React Router
+- Tailwind CSS
+- Socket.io Client
 
 ## Spielmodi
 
-- **Normal:** Alle 7 Fakten gleichzeitig sichtbar, frei umsortierbar bis zum Absenden
-- **Hardcore** _(geplant)_: Fakten erscheinen einzeln nacheinander, jede Einordnung sofort gesperrt
+- **Normal:** Karten können bis zum Absenden neu sortiert werden.
+- **Hardcore:** Platzierte Karten sind gesperrt. Für die Runde gibt es 60
+  Sekunden. Leere Plätze werden nach Ablauf der Zeit zufällig gefüllt.
+- **Multiplayer:** Zwei Personen spielen dieselbe Runde über einen Raumcode.
 
 ## Ordnerstruktur
 
-```
+```text
 client/
 ├── index.html
 ├── public/
-│   ├── favicon.svg
-│   └── icons.svg
 └── src/
-    ├── main.tsx       # Einstiegspunkt
-    ├── App.tsx        # Haupt-Komponente
-    ├── App.css
-    └── index.css
+    ├── components/    # Teile der Spieloberfläche
+    ├── hooks/         # Spiel-, Timer- und Eingabelogik
+    ├── pages/         # Start, Singleplayer und Multiplayer
+    ├── styles/        # Gemeinsame Farben und Fokus-Stile
+    ├── utils/         # Spiellogik
+    ├── App.tsx        # Routen
+    └── main.tsx       # Einstiegspunkt
 ```
 
-## Setup & Start
+## Start
 
 ```bash
 bun install
-
-# Entwicklung (mit HMR)
 bun run dev
-
-# Produktions-Build
-bun run build
-
-# Build-Vorschau
-bun run preview
 ```
 
-> Der Client erwartet den Server unter `http://localhost:3000`.
+Das Frontend läuft dann unter <http://localhost:5173>. Das Backend wird ohne
+weitere Einstellung unter <http://localhost:3000> erwartet.
 
-## Linting
+Für eine andere Backend-URL kann `VITE_API_URL` gesetzt werden:
 
 ```bash
-bun run lint
+VITE_API_URL=https://example.com bun run dev
 ```
+
+## Befehle
+
+| Befehl            | Aufgabe                      |
+| ----------------- | ---------------------------- |
+| `bun run dev`     | Entwicklungsserver starten   |
+| `bun run build`   | Produktions-Build erstellen  |
+| `bun run preview` | Build lokal ansehen          |
+| `bun run lint`    | Code mit ESLint prüfen       |
+| `bun test`        | Tests der Spiellogik starten |
+
+## Bedienung
+
+Die Karten können gezogen oder angeklickt werden. Mit den Tasten `1` bis `7`
+wird eine Karte auf einen Platz gelegt. Die fertige Runde wird mit `Enter`
+abgeschickt.

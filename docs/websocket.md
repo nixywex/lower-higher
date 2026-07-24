@@ -1,50 +1,40 @@
-# Multiplayer – Socket.io Verbindung
+# Multiplayer mit Socket.io
 
-**URL:** `http://localhost:3000`  
-**Library:** `socket.io-client ^4`
+Der Client verbindet sich mit derselben URL wie die REST-API. Lokal ist das
+`http://localhost:3000`.
 
----
+Ein Raum hat zwei Personen. Der Host erstellt den Raum und teilt den Code. Das
+Spiel startet, sobald die zweite Person beigetreten ist.
 
 ## Events
 
 ### Client → Server
 
-| Event         | Payload             | Beschreibung                                                                               |
-| ------------- | ------------------- | ------------------------------------------------------------------------------------------ |
-| `createRoom`  | –                   | Neuen Raum erstellen. Server lädt die Fakten für diese Runde.                              |
-| `joinRoom`    | `{ code: string }`  | Vorhandenem Raum per Code beitreten.                                                       |
-| `submitOrder` | `{ ids: number[] }` | Eigene Sortierung einreichen. IDs in aufsteigender Reihenfolge (Index 0 = kleinster Wert). |
+| Event         | Payload                  | Beschreibung                            |
+| ------------- | ------------------------ | --------------------------------------- |
+| `createRoom`  | `{ hardcore?: boolean }` | Erstellt einen Raum und lädt die Fakten |
+| `joinRoom`    | `{ code: string }`       | Tritt einem Raum bei                    |
+| `submitOrder` | `{ ids: number[] }`      | Schickt die eigene Reihenfolge          |
+
+Bei `submitOrder` steht die größte Zahl an Position 0. Die Reihenfolge läuft von
+`MAX` nach `MIN`.
 
 ### Server → Client
 
-| Event                | Payload                                                                                                                     | Wer empfängt          | Beschreibung                                       |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------- | --------------------- | -------------------------------------------------- |
-| `roomCode`           | `{ code: string }`                                                                                                          | Host                  | Raum wurde erstellt.                               |
-| `roomReady`          | `{ facts: FactForClient[] }`                                                                                                | Beide                 | Gast ist beigetreten, Spiel kann starten.          |
-| `gameResult`         | `{ rightAnswers: Fact[], scores: { [socketId]: number }, orders: { [socketId]: Fact[] }, hostId: string, guestId: string }` | Beide                 | Beide haben submitted, Ergebnis liegt vor.         |
-| `playerDisconnected` | –                                                                                                                           | Verbleibender Spieler | Gegner hat die Verbindung getrennt.                |
-| `gameError`          | `{ message: string }`                                                                                                       | Auslöser              | Ungültige Aktion (z.B. Raum voll, nicht gefunden). |
-
----
+| Event                | Payload                                             | Beschreibung                               |
+| -------------------- | --------------------------------------------------- | ------------------------------------------ |
+| `roomCode`           | `{ code: string }`                                  | Gibt dem Host den Raumcode                 |
+| `roomReady`          | `{ facts: FactForClient[], hardcore: boolean }`     | Startet das Spiel für beide Personen       |
+| `gameResult`         | `{ rightAnswers, scores, orders, hostId, guestId }` | Enthält Reihenfolgen und Punkte            |
+| `playerDisconnected` | –                                                   | Die andere Person hat den Raum verlassen   |
+| `gameError`          | `{ message: string }`                               | Eine Aktion konnte nicht ausgeführt werden |
 
 ## Datentypen
 
 ```ts
 type FactForClient = { id: number; question: string };
-
 type Fact = { id: number; question: string; answer: number };
 ```
 
-`scores` ist ein Objekt mit der `socket.id` als Key – jeder Spieler kann seinen eigenen Score anhand von `socket.id` herauslesen.
-
-`orders` hat dasselbe Schema: Key ist die `socket.id`, Value ist die vom jeweiligen Spieler eingereichte Reihenfolge als `Fact[]` (inklusive `answer`). Um die Reihenfolge des Gegners zu lesen:
-
-```ts
-socket.on('gameResult', ({ rightAnswers, scores, orders, hostId, guestId }) => {
-  const myId = socket.id;
-  const opponentId = myId === hostId ? guestId : hostId;
-
-  const myOrder = orders[myId]; // eigene Reihenfolge
-  const opponentOrder = orders[opponentId]; // Reihenfolge des Gegners
-});
-```
+In `scores` und `orders` ist die Socket-ID der Schlüssel. So kann der Client die
+eigenen Daten und die Daten der anderen Person unterscheiden.
