@@ -1,5 +1,9 @@
 import { useCallback, useState } from 'react';
 import type { FactSummary } from '../types';
+import {
+  autoFillRemaining as fillRemainingSlots,
+  dropOnSlot as calculateDrop,
+} from '../utils/gameLogic';
 
 export type DragSource = 'stack' | number | null;
 
@@ -38,34 +42,29 @@ export function useDragDrop(hardcore: boolean) {
     setDragSource(null);
   }, []);
 
-  // drops the current card into a slot, swapping with whatever's already there if needed
   const dropOnSlot = useCallback(
     (slotIndex: number) => {
       if (!dragItem) return;
-      const updated = [...sortedAnswers];
 
-      if (dragSource === 'stack') {
-        if (!updated[slotIndex]) {
-          updated[slotIndex] = dragItem;
-          setSortedAnswers(updated);
-          setPulsedSlot(slotIndex);
-          setTimeout(() => setPulsedSlot(null), 400);
-          setCurrentIndex((i) => i + 1);
-        } else if (!hardcore) {
-          const displaced = updated[slotIndex];
-          updated[slotIndex] = dragItem;
-          setSortedAnswers(updated);
-          const newFacts = [...facts];
-          newFacts[currentIndex] = displaced!;
-          setFacts(newFacts);
+      if (dragSource !== null) {
+        const result = calculateDrop({
+          sortedAnswers,
+          facts,
+          currentIndex,
+          dragItem,
+          dragSource,
+          slotIndex,
+          hardcore,
+        });
+
+        setSortedAnswers(result.sortedAnswers);
+        setFacts(result.facts);
+        setCurrentIndex(result.currentIndex);
+
+        if (dragSource === 'stack' && result.sortedAnswers !== sortedAnswers) {
           setPulsedSlot(slotIndex);
           setTimeout(() => setPulsedSlot(null), 400);
         }
-      } else if (typeof dragSource === 'number' && !hardcore) {
-        const occupant = updated[slotIndex];
-        updated[slotIndex] = dragItem;
-        updated[dragSource] = occupant ?? null;
-        setSortedAnswers(updated);
       }
 
       setDragItem(null);
@@ -96,14 +95,8 @@ export function useDragDrop(hardcore: boolean) {
     [sortedAnswers, facts, currentIndex]
   );
 
-  // shuffles the leftover cards into the empty slots, used when the hardcore timer hits 0
   const autoFillRemaining = useCallback(() => {
-    const remaining = facts.slice(currentIndex).sort(() => Math.random() - 0.5);
-    const updated = [...sortedAnswers];
-    let ri = 0;
-    for (let i = 0; i < updated.length; i++) {
-      if (!updated[i] && remaining[ri]) updated[i] = remaining[ri++];
-    }
+    const updated = fillRemainingSlots(facts, currentIndex, sortedAnswers);
     setSortedAnswers(updated);
     return updated.filter((f): f is FactSummary => f !== null).map((f) => f.id);
   }, [facts, currentIndex, sortedAnswers]);
