@@ -4,6 +4,8 @@ Lower-Higher ist ein browserbasiertes Schätz- und Sortierspiel. In jeder Runde
 werden sieben zufällige Fakten angezeigt, die anhand ihres Zahlenwerts von
 **MAX nach MIN** eingeordnet werden müssen.
 
+**PRESENTATION** findet man in diesem Repo [lower-higher-praesentation.pptx.pdf](./lower-higher-praesentation.pptx.pdf)
+
 > Dieses Projekt entstand im Rahmen des Fachs **Web Engineering**. Studierende: Urosevic Natalija, Sheludko Nikita
 
 ## Live-Demo
